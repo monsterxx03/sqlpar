@@ -16,6 +16,7 @@ func setResult(yylex interface{}, stmt Statement) {
     expr            Expr
     stmt            Statement
     sel             *Select
+    sel_expr         SelectExpr
     sel_field       SelectField
     sel_field_list  SelectFieldList
     orderBy         OrderBy
@@ -26,8 +27,9 @@ func setResult(yylex interface{}, stmt Statement) {
 %token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET DESC 
 %token <str> IDENT INTEGRAL
 
-%type <str> table_name col
+%type <str> table_name col func_name
 %type <stmt> command
+%type <sel_expr> sel_expr
 %type <sel> select_stmt
 %type <sel_field> sel_field
 %type <sel_field_list> sel_field_list
@@ -53,10 +55,21 @@ command:
     }
 
 select_stmt:
-  SELECT sel_field_list FROM table_name limit_opt
+  SELECT sel_expr FROM table_name limit_opt
   {
     $$ = NewSelect($2, $4, $5)
   }
+
+sel_expr:
+    sel_field_list
+    {
+        $$ = $1
+    }
+| func_name '(' sel_field_list ')'
+{
+    $$ = &FuncExpr{Name: $1, Fields: $3}
+}
+
 
 sel_field_list:
     sel_field
@@ -79,6 +92,11 @@ sel_field:
     $$ = &ColExpr{$1}
 }
 
+func_name:
+    IDENT
+    {
+        $$ = $1
+    }
 
 table_name:
     IDENT

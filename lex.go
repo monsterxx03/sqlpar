@@ -28,7 +28,7 @@ func (l *Lexer) Lex(yylval *yySymType) int {
 		switch tok {
 		case scanner.Int:
 			return INTEGRAL
-		case ',', '*':
+		case ',', '*', '(', ')':
 			return int(tok)
 		case scanner.Ident:
 			text = strings.ToUpper(text)

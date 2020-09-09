@@ -5,6 +5,7 @@ type (
 	}
 
 	Select struct {
+		Func   *FuncExpr
 		Fields SelectFieldList
 		TableName string
 		Where *Where
@@ -16,8 +17,9 @@ type (
 		Expr Expr
 	}
 
+	SelectExpr interface {}
+
 	SelectField interface {
-		
 	}
 	SelectFieldList []SelectField
 
@@ -25,6 +27,10 @@ type (
 		Name  string
 	}
 	StarExpr struct {
+	}
+	FuncExpr struct {
+		Name string
+		Fields SelectFieldList
 	}
 )
 
@@ -61,8 +67,14 @@ type Limit struct {
 }
 
 
-func NewSelect(fields SelectFieldList, table string, limit *Limit) *Select {
-	return &Select{Fields: fields, TableName: table, Limit: limit}
+func NewSelect(selExpr SelectExpr, table string, limit *Limit) *Select {
+	switch v := selExpr.(type) {
+	case *FuncExpr:
+		return &Select{Func: v, TableName: table, Limit: limit}
+	case SelectFieldList:
+		return &Select{Fields: v, TableName: table, Limit: limit}
+	}
+	return nil
 }
 
 func NewWhere() *Where {

@@ -16,6 +16,11 @@ import (
 func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
 	allFields := false
 	tgtFields := make([]string, 0, len(stmt.Fields)) 
+	if stmt.Func != nil {
+		// TODO execute agg func
+		return nil
+	}
+	// Execute select cols
 	for _, field := range stmt.Fields {
 		if _, ok := field.(*StarExpr); ok {
 			allFields = true
