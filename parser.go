@@ -22,7 +22,6 @@ type yySymType struct {
 	expr           Expr
 	stmt           Statement
 	sel            *Select
-	sel_expr       SelectExpr
 	sel_field      SelectField
 	sel_field_list SelectFieldList
 	orderBy        OrderBy
@@ -36,9 +35,8 @@ const WHERE = 57349
 const ORDER_BY = 57350
 const LIMIT = 57351
 const OFFSET = 57352
-const DESC = 57353
-const IDENT = 57354
-const INTEGRAL = 57355
+const IDENT = 57353
+const INTEGRAL = 57354
 
 var yyToknames = [...]string{
 	"$end",
@@ -51,13 +49,12 @@ var yyToknames = [...]string{
 	"ORDER_BY",
 	"LIMIT",
 	"OFFSET",
-	"DESC",
 	"IDENT",
 	"INTEGRAL",
-	"'('",
-	"')'",
 	"','",
 	"'*'",
+	"'('",
+	"')'",
 }
 var yyStatenames = [...]string{}
 
@@ -70,54 +67,52 @@ var yyExca = [...]int{
 	-1, 1,
 	1, -1,
 	-2, 0,
-	-1, 12,
-	14, 11,
-	-2, 13,
+	-1, 10,
+	15, 9,
+	-2, 11,
 }
 
 const yyPrivate = 57344
 
-const yyLast = 31
+const yyLast = 26
 
 var yyAct = [...]int{
 
-	20, 12, 9, 27, 11, 13, 13, 24, 16, 26,
-	16, 6, 17, 29, 28, 25, 7, 5, 23, 15,
-	21, 19, 1, 4, 22, 3, 8, 18, 2, 10,
-	14,
+	12, 10, 23, 20, 7, 22, 13, 11, 5, 25,
+	6, 24, 21, 15, 12, 19, 4, 1, 18, 3,
+	2, 9, 17, 16, 8, 14,
 }
 var yyPact = [...]int{
 
-	12, -1000, -1000, -1000, 4, -11, -1000, -1000, 13, -6,
-	-2, -1000, -1000, -1000, -1000, 4, -12, -12, 9, -1000,
-	-1000, -8, -1000, 2, -1000, -7, 1, 0, -1000, -1000,
+	11, -1000, -1000, -1000, -10, 1, -1000, -1000, -1000, -9,
+	-1000, 2, -10, -10, 6, -1000, -1000, -13, -1000, 0,
+	-1000, -8, -1, -3, -1000, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 11, 30, 29, 28, 26, 25, 4, 2, 24,
-	22,
+	0, 25, 24, 21, 20, 19, 10, 8, 18, 17,
 }
 var yyR1 = [...]int{
 
-	0, 10, 4, 4, 6, 5, 5, 8, 8, 7,
-	7, 3, 1, 2, 9, 9, 9, 9,
+	0, 9, 4, 5, 7, 7, 6, 6, 6, 3,
+	1, 2, 8, 8, 8, 8,
 }
 var yyR2 = [...]int{
 
-	0, 1, 1, 2, 5, 1, 4, 1, 3, 1,
-	1, 1, 1, 1, 0, 2, 4, 4,
+	0, 1, 1, 5, 1, 3, 1, 1, 4, 1,
+	1, 1, 0, 2, 4, 4,
 }
 var yyChk = [...]int{
 
-	-1000, -10, -4, -6, 11, 5, -1, 12, -5, -8,
-	-3, -7, 12, 17, -2, 6, 16, 14, -1, -7,
-	12, -8, -9, 9, 15, 13, 16, 10, 13, 13,
+	-1000, -9, -4, -5, 5, -7, -6, 14, -2, -3,
+	11, 6, 13, 15, -1, 11, -6, -7, -8, 9,
+	16, 12, 13, 10, 12, 12,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 2, 0, 0, 3, 12, 0, 5,
-	0, 7, -2, 9, 10, 0, 0, 0, 14, 8,
-	13, 0, 4, 0, 6, 15, 0, 0, 16, 17,
+	0, -2, 1, 2, 0, 0, 4, 6, 7, 0,
+	-2, 0, 0, 0, 12, 10, 5, 0, 3, 0,
+	8, 13, 0, 0, 14, 15,
 }
 var yyTok1 = [...]int{
 
@@ -125,12 +120,12 @@ var yyTok1 = [...]int{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	14, 15, 17, 3, 16,
+	15, 16, 14, 3, 13,
 }
 var yyTok2 = [...]int{
 
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13,
+	12,
 }
 var yyTok3 = [...]int{
 	0,
@@ -475,105 +470,94 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:44
+//line parser.y:42
 		{
 			setResult(yylex, yyDollar[1].stmt)
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:50
+//line parser.y:48
 		{
 			yyVAL.stmt = yyDollar[1].sel
 		}
 	case 3:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser.y:54
 		{
+			yyVAL.sel = NewSelect(yyDollar[2].sel_field_list, yyDollar[4].str, yyDollar[5].limit)
 		}
 	case 4:
-		yyDollar = yyS[yypt-5 : yypt+1]
-//line parser.y:59
-		{
-			yyVAL.sel = NewSelect(yyDollar[2].sel_expr, yyDollar[4].str, yyDollar[5].limit)
-		}
-	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:65
-		{
-			yyVAL.sel_expr = yyDollar[1].sel_field_list
-		}
-	case 6:
-		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:69
-		{
-			yyVAL.sel_expr = &FuncExpr{Name: yyDollar[1].str, Fields: yyDollar[3].sel_field_list}
-		}
-	case 7:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:76
+//line parser.y:62
 		{
 			yyVAL.sel_field_list = SelectFieldList{yyDollar[1].sel_field}
 		}
-	case 8:
+	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:80
+//line parser.y:66
 		{
 			yyVAL.sel_field_list = append(yyVAL.sel_field_list, yyDollar[3].sel_field)
+		}
+	case 6:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:73
+		{
+			yyVAL.sel_field = &StarExpr{}
+		}
+	case 7:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:77
+		{
+			yyVAL.sel_field = &ColExpr{yyDollar[1].str}
+		}
+	case 8:
+		yyDollar = yyS[yypt-4 : yypt+1]
+//line parser.y:81
+		{
+			yyVAL.sel_field = &FuncExpr{Name: yyDollar[1].str, Fields: yyDollar[3].sel_field_list}
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:87
 		{
-			yyVAL.sel_field = &StarExpr{}
+			yyVAL.str = yyDollar[1].str
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:91
+//line parser.y:93
 		{
-			yyVAL.sel_field = &ColExpr{yyDollar[1].str}
+			yyVAL.str = yyDollar[1].str
 		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:97
+//line parser.y:100
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 12:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:103
-		{
-			yyVAL.str = yyDollar[1].str
-		}
-	case 13:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:110
-		{
-			yyVAL.str = yyDollar[1].str
-		}
-	case 14:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser.y:115
+//line parser.y:105
 		{
 			yyVAL.limit = nil
 		}
-	case 15:
+	case 13:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser.y:119
+//line parser.y:109
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			yyVAL.limit = &Limit{Rowcount: limit}
 		}
-	case 16:
+	case 14:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:124
+//line parser.y:114
 		{
 			offset, _ := strconv.Atoi(yyDollar[2].str)
 			limit, _ := strconv.Atoi(yyDollar[4].str)
 			yyVAL.limit = &Limit{Offset: offset, Rowcount: limit}
 		}
-	case 17:
+	case 15:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser.y:130
+//line parser.y:120
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			offset, _ := strconv.Atoi(yyDollar[4].str)

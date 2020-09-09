@@ -10,8 +10,8 @@ import (
 var debug = false
 
 type Lexer struct {
-	r  bufio.Reader
-	s  scanner.Scanner
+	r      bufio.Reader
+	s      scanner.Scanner
 	result Statement
 }
 
@@ -41,7 +41,7 @@ func (l *Lexer) Lex(yylval *yySymType) int {
 				return LIMIT
 			default:
 				return IDENT
-		}
+			}
 		default:
 			return ILLEGAL
 		}

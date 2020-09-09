@@ -1,32 +1,32 @@
 package main
 
 import (
-	"strings"
-	"io"
-	"os"
 	"fmt"
-	"text/tabwriter"
 	"github.com/peterh/liner"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/reader"
+	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
+	"io"
+	"os"
+	"strings"
+	"text/tabwriter"
 )
 
 //go:generate goyacc -o parser.go parser.y
 
 func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
 	allFields := false
-	tgtFields := make([]string, 0, len(stmt.Fields)) 
-	if stmt.Func != nil {
-		// TODO execute agg func
-		return nil
-	}
-	// Execute select cols
+	tgtFields := make([]string, 0, len(stmt.Fields))
 	for _, field := range stmt.Fields {
-		if _, ok := field.(*StarExpr); ok {
+		switch v := field.(type) {
+		case *StarExpr:
 			allFields = true
 			break
+		case *ColExpr:
+			tgtFields = append(tgtFields, v.Name)
+		default:
+			return fmt.Errorf("don't support %+v", v)
 		}
-		tgtFields = append(tgtFields, field.(*ColExpr).Name)
 	}
 	if allFields {
 		// TODO query all cols
@@ -39,28 +39,31 @@ func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
 	}
 	result := make([][]interface{}, 0, len(tgtFields))
 	for _, field := range tgtFields {
-		val, _, _, err := pr.ReadColumnByPath(stmt.TableName + "." + field, limit)
-		if err != nil { return  err }
+		val, _, _, err := pr.ReadColumnByPath(stmt.TableName+"."+field, limit)
+		if err != nil {
+			return err
+		}
 		result = append(result, val)
 	}
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-	fmt.Fprintln(w, strings.Join(tgtFields, "\t") + "\t")
-	for i :=int64(0); i<limit; i++ {
+	fmt.Fprintln(w, strings.Join(tgtFields, "\t")+"\t")
+	for i := int64(0); i < limit; i++ {
 		line := make([]string, 0, len(tgtFields))
 		for _, col := range result {
 			line = append(line, fmt.Sprint(col[i]))
 		}
-		fmt.Fprintln(w, strings.Join(line, "\t") + "\t")
+		fmt.Fprintln(w, strings.Join(line, "\t")+"\t")
 	}
 	w.Flush()
 	return nil
 }
 
+func showTable(pr *reader.ParquetReader) {
+	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
+	fmt.Println(tree.OutputJsonSchema())
+}
 
 func parseSQL(sql string) Statement {
-	if strings.HasSuffix(sql, ";") {
-		sql = strings.TrimSuffix(sql, ";")
-	}
 	lex := NewLexer(sql)
 	parser := yyNewParser()
 	parser.Parse(lex)
@@ -83,6 +86,10 @@ func main() {
 		panic(err)
 	}
 	for {
+		pr, err := reader.NewParquetColumnReader(fr, 2)
+		if err != nil {
+			panic(err)
+		}
 		input, err := ll.Prompt(">> ")
 		if err == io.EOF {
 			os.Exit(0)
@@ -95,19 +102,24 @@ func main() {
 		if len(input) == 0 {
 			continue
 		}
+		if strings.HasSuffix(input, ";") {
+			input = strings.TrimSuffix(input, ";")
+		}
+		if strings.ToLower(input) == "show table" {
+			showTable(pr)
+			continue
+		}
 		stmt := parseSQL(input)
 		if stmt == nil {
 			continue
-		}
-		pr, err := reader.NewParquetColumnReader(fr, 2)
-		if err != nil {
-			panic(err)
 		}
 		switch v := stmt.(type) {
 		case *Select:
 			if err := ExecuteSelect(pr, v); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
+		case *Desc:
+			fmt.Println(v)
 		default:
 			continue
 		}

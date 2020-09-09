@@ -4,39 +4,40 @@ type (
 	Statement interface {
 	}
 
-	Select struct {
-		Func   *FuncExpr
-		Fields SelectFieldList
+	Desc struct {
 		TableName string
-		Where *Where
-		OrderBy OrderBy
-		Limit *Limit
+	}
+
+	Select struct {
+		Fields    SelectFieldList
+		TableName string
+		Where     *Where
+		OrderBy   OrderBy
+		GroupBy   GroupBy
+		Limit     *Limit
 	}
 
 	Where struct {
 		Expr Expr
 	}
 
-	SelectExpr interface {}
-
 	SelectField interface {
 	}
 	SelectFieldList []SelectField
 
 	ColExpr struct {
-		Name  string
+		Name string
 	}
 	StarExpr struct {
 	}
 	FuncExpr struct {
-		Name string
+		Name   string
 		Fields SelectFieldList
 	}
 )
 
 type (
 	Expr interface {
-		
 	}
 	AndExpr struct {
 		Left, Right Expr
@@ -58,23 +59,18 @@ type (
 type OrderBy []*Order
 
 type Order struct {
-	Expr Expr
+	Expr      Expr
 	Direction string
 }
+
+type GroupBy []string
 
 type Limit struct {
 	Offset, Rowcount int
 }
 
-
-func NewSelect(selExpr SelectExpr, table string, limit *Limit) *Select {
-	switch v := selExpr.(type) {
-	case *FuncExpr:
-		return &Select{Func: v, TableName: table, Limit: limit}
-	case SelectFieldList:
-		return &Select{Fields: v, TableName: table, Limit: limit}
-	}
-	return nil
+func NewSelect(fields SelectFieldList, table string, limit *Limit) *Select {
+	return &Select{Fields: fields, TableName: table, Limit: limit}
 }
 
 func NewWhere() *Where {
