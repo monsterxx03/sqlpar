@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"log"
 	"strings"
 	"text/scanner"
@@ -10,7 +9,6 @@ import (
 var debug = false
 
 type Lexer struct {
-	r      bufio.Reader
 	s      scanner.Scanner
 	result Statement
 }

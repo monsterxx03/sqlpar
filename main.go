@@ -70,7 +70,7 @@ func parseSQL(sql string) Statement {
 	return lex.result
 }
 
-func main() {
+func RunShell() {
 	yyErrorVerbose = true
 	if len(os.Args) == 1 {
 		fmt.Println("Usage: sqlpar test.parquet")
@@ -124,4 +124,26 @@ func main() {
 			continue
 		}
 	}
+}
+
+func test() {
+	fr, err := local.NewLocalFileReader("shoes.parquet")
+	if err != nil {
+		panic(err)
+	}
+	r, err := reader.NewParquetColumnReader(fr, 2)
+	if err != nil {
+		panic(err)
+	}
+	en := &ParquetEngine{schemaName: "parquet_go_root", r: r}
+	if rs, err := en.FetchColumn(ColExpr{Name: "shoe_name"}, 10, &Eq{"air_griffey"}); err != nil {
+		panic(err)
+	} else {
+		fmt.Printf("%+v\n", rs)
+	}
+}
+
+func main() {
+// 	RunShell()
+test()
 }
