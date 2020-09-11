@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"text/tabwriter"
+	"github.com/monsterxx03/sqlpar/value"
 )
 
 //go:generate goyacc -o parser.go parser.y
@@ -136,7 +137,7 @@ func test() {
 		panic(err)
 	}
 	en := &ParquetEngine{schemaName: "parquet_go_root", r: r}
-	if rs, err := en.FetchColumn(ColExpr{Name: "shoe_name"}, 10, &Eq{"air_griffey"}); err != nil {
+	if rs, err := en.FetchColumn("age", 10, "<", value.Int{100}); err != nil {
 		panic(err)
 	} else {
 		fmt.Printf("%+v\n", rs)

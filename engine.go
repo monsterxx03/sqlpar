@@ -1,56 +1,50 @@
 package main
 
 import (
+	"github.com/monsterxx03/sqlpar/value"
 	"github.com/xitongsys/parquet-go/reader"
 )
 
-type Value interface{
-	Eq (val Value) bool
-	Gt (val Value) bool
-	Ge (val Value) bool
-	Lt (val Value) bool
-	Le (val Value) bool
-	Match (pattern string) bool
-}
-
-type ResultSet struct {
-	Cols []string
-	ColRes []Value
+type RecordSet struct {
+	Cols   []string
+	ColRes []value.Value
 }
 
 type Engine interface {
-	FetchColumn(col ColExpr, compareTo Value, rowCount int64) (*ResultSet, error)
+	FetchColumn(col ColExpr, compareTo value.Value, rowCount int64) (*RecordSet, error)
 }
-
 
 type ParquetEngine struct {
 	schemaName string
-	r *reader.ParquetReader
+	r          *reader.ParquetReader
 }
 
-func (p *ParquetEngine) FetchColumn(col string, n int64, compareTo Value) (*ResultSet, error) {
-	vals, err := p.fetch(col, n, compareTo)
+func (p *ParquetEngine) FetchColumn(col string, n int64, op string, compareTo value.Value) (*RecordSet, error) {
+	vals, err := p.fetch(col, n, op, compareTo)
 	if err != nil {
 		return nil, err
 	}
-	return &ResultSet{Cols: []string{col}, ColRes: vals}, nil
+	return &RecordSet{Cols: []string{col}, ColRes: vals}, nil
 }
 
-func (p *ParquetEngine) fetch(col string, n int64, compareTo Value) ([]Value, error){
-	vals, _, _, err := p.r.ReadColumnByPath(p.schemaName + "." + col, n)
-	if err != nil { return nil, err }
-	rs := make([]Value, 0)
-	for _, v := range vals {
+func (p *ParquetEngine) fetch(col string, n int64, op string, compareTo value.Value) ([]value.Value, error) {
+	vals, _, _, err := p.r.ReadColumnByPath(p.schemaName+"."+col, n)
+	if err != nil {
+		return nil, err
+	}
+	rs := make([]value.Value, 0)
+	for _, _v := range vals {
+		v := value.NewFromParquetValue(_v)
 		ok := true
 		if compareTo != nil {
-			ok, err = eval.Eval(v)
+			ok, err = value.Compare(v, compareTo, op)
 			if err != nil {
 				return nil, err
 			}
-		} 
-		if ok {
-			rs = append(rs, v)	
 		}
+		 if ok {
+		 	rs = append(rs, v)
+		 }
 	}
 	return rs, nil
 }
