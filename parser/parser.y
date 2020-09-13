@@ -27,7 +27,7 @@ func setResult(yylex interface{}, stmt Statement) {
 
 %token ILLEGAL
 %token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET 
-%token <str> IDENT INTEGRAL
+%token <str> IDENT INTEGER FLOAT
 
 %type <expr> expr
 %type <str> table_name col func_name compare 
@@ -141,18 +141,18 @@ limit_opt:
   {
     $$ = nil
   }
-| LIMIT INTEGRAL
+| LIMIT INTEGER
     {
         limit, _ := strconv.Atoi($2)
         $$ = &Limit{Rowcount: limit}
     }
-| LIMIT INTEGRAL ',' INTEGRAL
+| LIMIT INTEGER ',' INTEGER
     {
         offset, _ := strconv.Atoi($2)
         limit, _ := strconv.Atoi($4)
         $$ = &Limit{Offset: offset, Rowcount: limit}
     }
-| LIMIT INTEGRAL OFFSET INTEGRAL
+| LIMIT INTEGER OFFSET INTEGER
   {
         limit, _ := strconv.Atoi($2)
         offset, _ := strconv.Atoi($4)
@@ -165,7 +165,7 @@ value:
       $$ = value.Str{Val: $1}
     }
 |
-    INTEGRAL
+    INTEGER
     {
       v, _ := strconv.Atoi($1)
       $$ = value.Int{Val: int64(v)}
