@@ -1,17 +1,21 @@
-package main
+package parser
 
 import (
-	"log"
+	"errors"
 	"strings"
 	"text/scanner"
 )
 
 var debug = false
 
+func init() {
+	yyErrorVerbose = true
+}
+
 type Lexer struct {
 	s      scanner.Scanner
 	result Statement
-	preTok rune
+	err    error
 }
 
 func NewLexer(sql string) *Lexer {
@@ -46,7 +50,6 @@ func (l *Lexer) Lex(yylval *yySymType) int {
 				TOKEN = IDENT
 			}
 		default:
-			l.preTok = tok
 			return TOKEN
 		}
 	}
@@ -54,7 +57,7 @@ func (l *Lexer) Lex(yylval *yySymType) int {
 }
 
 func (l *Lexer) Error(s string) {
-	log.Printf("parse error: %s", s)
+	l.err = errors.New(s)
 }
 
 func isLetter(ch rune) bool {

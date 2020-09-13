@@ -1,5 +1,5 @@
 %{
-package main
+package parser
 
 import (
     "strconv"
@@ -196,3 +196,10 @@ compare:
    {
     $$ = "!="
     }
+%%
+
+func Parse(s string) (Statement, error) {
+    l:= NewLexer(s)
+    yyParse(l)
+    return l.result, l.err
+}

@@ -1,6 +1,6 @@
-build: parser
+build: yacc
 	go build -o bin/sqlpar
 
-parser:
+yacc:
 	go generate
 	rm y.output

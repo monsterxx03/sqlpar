@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"github.com/monsterxx03/sqlpar/value"

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/monsterxx03/sqlpar/engine"
+	"github.com/monsterxx03/sqlpar/parser"
 	"github.com/monsterxx03/sqlpar/value"
 	"github.com/peterh/liner"
 	"github.com/xitongsys/parquet-go/reader"
@@ -13,17 +14,17 @@ import (
 	"text/tabwriter"
 )
 
-//go:generate goyacc -o parser.go parser.y
+//go:generate goyacc -o parser/parser.go parser/parser.y
 
-func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
+func ExecuteSelect(pr *reader.ParquetReader, stmt *parser.Select) error {
 	allFields := false
 	tgtFields := make([]string, 0, len(stmt.Fields))
 	for _, field := range stmt.Fields {
 		switch v := field.(type) {
-		case *StarExpr:
+		case *parser.StarExpr:
 			allFields = true
 			break
-		case *ColExpr:
+		case *parser.ColExpr:
 			tgtFields = append(tgtFields, v.Name)
 		default:
 			return fmt.Errorf("don't support %+v", v)
@@ -59,7 +60,7 @@ func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
 	return nil
 }
 
-func runSelect(en *engine.ParquetEngine, stmt *Select) error {
+func runSelect(en *engine.ParquetEngine, stmt *parser.Select) error {
 	fmt.Printf("%+v", stmt)
 	return nil
 }
@@ -69,15 +70,7 @@ func showTable(pr *reader.ParquetReader) {
 	fmt.Println(tree.OutputJsonSchema())
 }
 
-func parseSQL(sql string) Statement {
-	lex := NewLexer(sql)
-	parser := yyNewParser()
-	parser.Parse(lex)
-	return lex.result
-}
-
 func RunShell() {
-	yyErrorVerbose = true
 	if len(os.Args) == 1 {
 		fmt.Println("Usage: sqlpar test.parquet")
 		os.Exit(1)
@@ -116,16 +109,17 @@ func RunShell() {
 			showTable(pr)
 			continue
 		}
-		stmt := parseSQL(input)
-		if stmt == nil {
+		stmt, err := parser.Parse(input)
+		if err != nil {
+			fmt.Println(err)
 			continue
 		}
 		switch v := stmt.(type) {
-		case *Select:
+		case *parser.Select:
 			if err := runSelect(en, v); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
-		case *Desc:
+		case *parser.Desc:
 			fmt.Println(v)
 		default:
 			continue
