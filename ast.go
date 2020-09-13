@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/monsterxx03/sqlpar/value"
+)
+
 type (
 	Statement interface {
 	}
@@ -39,6 +43,11 @@ type (
 type (
 	Expr interface {
 	}
+	ComparisonExpr struct {
+		Left     string
+		Operator string
+		Right    value.Value
+	}
 	AndExpr struct {
 		Left, Right Expr
 	}
@@ -69,8 +78,9 @@ type Limit struct {
 	Offset, Rowcount int
 }
 
-func NewSelect(fields SelectFieldList, table string, limit *Limit) *Select {
-	return &Select{Fields: fields, TableName: table, Limit: limit}
+func NewSelect(fields SelectFieldList, table string, where *Where, limit *Limit) *Select {
+	return &Select{Fields: fields, TableName: table,
+		Where: where, Limit: limit}
 }
 
 func NewWhere() *Where {

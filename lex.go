@@ -11,6 +11,7 @@ var debug = false
 type Lexer struct {
 	s      scanner.Scanner
 	result Statement
+	preTok rune
 }
 
 func NewLexer(sql string) *Lexer {
@@ -21,27 +22,32 @@ func NewLexer(sql string) *Lexer {
 
 func (l *Lexer) Lex(yylval *yySymType) int {
 	for tok := l.s.Scan(); tok != scanner.EOF; tok = l.s.Scan() {
+		TOKEN := ILLEGAL
 		text := l.s.TokenText()
 		yylval.str = text
 		switch tok {
 		case scanner.Int:
-			return INTEGRAL
-		case ',', '*', '(', ')':
-			return int(tok)
+			TOKEN = INTEGRAL
+		case '"', ',', '*', '(', ')':
+			TOKEN = int(tok)
+		// TODO handle > < = >= <= !=
 		case scanner.Ident:
 			text = strings.ToUpper(text)
 			switch text {
 			case "SELECT":
-				return SELECT
+				TOKEN = SELECT
 			case "FROM":
-				return FROM
+				TOKEN = FROM
 			case "LIMIT":
-				return LIMIT
+				TOKEN = LIMIT
+			case "WHERE":
+				TOKEN = WHERE
 			default:
-				return IDENT
+				TOKEN = IDENT
 			}
 		default:
-			return ILLEGAL
+			l.preTok = tok
+			return TOKEN
 		}
 	}
 	return 0

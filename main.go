@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/monsterxx03/sqlpar/engine"
+	"github.com/monsterxx03/sqlpar/value"
 	"github.com/peterh/liner"
-	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
 	"io"
 	"os"
 	"strings"
 	"text/tabwriter"
-	"github.com/monsterxx03/sqlpar/value"
 )
 
 //go:generate goyacc -o parser.go parser.y
@@ -59,6 +59,11 @@ func ExecuteSelect(pr *reader.ParquetReader, stmt *Select) error {
 	return nil
 }
 
+func runSelect(en *engine.ParquetEngine, stmt *Select) error {
+	fmt.Printf("%+v", stmt)
+	return nil
+}
+
 func showTable(pr *reader.ParquetReader) {
 	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
 	fmt.Println(tree.OutputJsonSchema())
@@ -82,12 +87,13 @@ func RunShell() {
 	ll.SetCtrlCAborts(true)
 
 	var path = os.Args[1]
-	fr, err := local.NewLocalFileReader(path)
+
+	en, err := engine.NewParquetEngine(path)
 	if err != nil {
 		panic(err)
 	}
 	for {
-		pr, err := reader.NewParquetColumnReader(fr, 2)
+		pr, err := en.GetColumnReader()
 		if err != nil {
 			panic(err)
 		}
@@ -116,7 +122,7 @@ func RunShell() {
 		}
 		switch v := stmt.(type) {
 		case *Select:
-			if err := ExecuteSelect(pr, v); err != nil {
+			if err := runSelect(en, v); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		case *Desc:
@@ -128,23 +134,18 @@ func RunShell() {
 }
 
 func test() {
-	fr, err := local.NewLocalFileReader("shoes.parquet")
+	en, err := engine.NewParquetEngine("bin/json_schema.parquet")
 	if err != nil {
 		panic(err)
 	}
-	r, err := reader.NewParquetColumnReader(fr, 2)
+	res, err := en.FetchColumn("Age", 2, "==", value.Int{20})
 	if err != nil {
 		panic(err)
 	}
-	en := &ParquetEngine{schemaName: "parquet_go_root", r: r}
-	if rs, err := en.FetchColumn("age", 10, "<", value.Int{100}); err != nil {
-		panic(err)
-	} else {
-		fmt.Printf("%+v\n", rs)
-	}
+	fmt.Println(res)
 }
 
 func main() {
-// 	RunShell()
-test()
+	RunShell()
+	// test()
 }
