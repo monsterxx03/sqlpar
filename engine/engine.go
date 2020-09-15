@@ -2,6 +2,7 @@ package engine
 
 import (
 	"errors"
+	_ "fmt"
 	"github.com/monsterxx03/sqlpar/parser"
 	"github.com/monsterxx03/sqlpar/value"
 	"github.com/xitongsys/parquet-go-source/local"
@@ -27,17 +28,16 @@ func NewParquetEngine(fileName string) (*ParquetEngine, error) {
 	return &ParquetEngine{schema: NewParquetSchema(r.SchemaHandler.SchemaElements), fr: fr}, nil
 }
 
-func (p *ParquetEngine) Execute(stmt parser.Statement) error {
+func (p *ParquetEngine) Execute(stmt parser.Statement) (map[string][]value.Value, error) {
 	switch stmt.(type) {
 	case *parser.Select:
-		p.executeSelect(stmt.(*parser.Select))
+		return p.executeSelect(stmt.(*parser.Select))
 	default:
-		return errors.New("unsupported statement")
+		return nil, errors.New("unsupported statement")
 	}
-	return nil
 }
 
-func (p *ParquetEngine) executeSelect(stmt *parser.Select) error {
+func (p *ParquetEngine) executeSelect(stmt *parser.Select) (map[string][]value.Value, error) {
 	cols := []string{}
 	for _, field := range stmt.Fields {
 		switch field.(type) {
@@ -54,19 +54,47 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) error {
 	}
 	total, err := p.GetTotalRowCount()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	limit := total
 	if stmt.Limit != nil {
 		limit = int64(stmt.Limit.Rowcount)
 	}
+	result := make(map[string][]value.Value)
 	if len(filterCols) > 0 {
-		res, err := p.FetchRows(filterCols, limit)
+		cols = append(cols, filterCols...)
+		cols = filterDup(cols)
+		rows, rowCnt, err := p.FetchRows(cols, limit)
 		if err != nil {
-			return err
+			return nil, err
+		}
+		if len(rows) == 0 {
+			return result, nil
+		}
+		row := make(map[string]value.Value)
+		for i := 0; i < rowCnt; i++ {
+			for n, col := range rows {
+				row[n] = col[i]
+			}
+			if ok, err := stmt.Where.Expr.Evaluate(row); err != nil {
+				return nil, err
+			} else if ok {
+				for n, v := range row {
+					if _, ok := result[n]; ok {
+						result[n] = append(result[n], v)
+					} else {
+						result[n] = []value.Value{v}
+					}
+				}
+			}
+		}
+	} else {
+		result, _, err = p.FetchRows(cols, limit)
+		if err != nil {
+			return nil, err
 		}
 	}
-	return nil
+	return result, nil
 }
 
 func (p *ParquetEngine) GetTotalRowCount() (int64, error) {
@@ -81,52 +109,33 @@ func (p *ParquetEngine) GetColumnReader() (*reader.ParquetReader, error) {
 	return reader.NewParquetColumnReader(p.fr, 2)
 }
 
-func (p *ParquetEngine) FetchRows(cols []string, limit int64) (map[string][]value.Value, error) {
+func (p *ParquetEngine) FetchRows(cols []string, limit int64) (rows map[string][]value.Value, count int, err error) {
 	cr, err := p.GetColumnReader()
 	if err != nil {
-		return nil, err
+		return
 	}
-	result := make(map[string][]value.Value)
+	rows = make(map[string][]value.Value)
 	for _, col := range cols {
-		vals, _, _, err := cr.ReadColumnByPath(p.schema.GetName() + "."+col, limit)
+		var vals []interface{}
+		// TODO loop fetch, if read count < limit
+		vals, _, _, err = cr.ReadColumnByPath(p.schema.GetName()+"."+col, limit)
 		if err != nil {
-			return nil, err
+			return
 		}
-		result[col] = value.NewFromParquetValues(vals)
+		count = len(vals)
+		rows[col] = value.NewFromParquetValues(vals)
 	}
-	return result, nil
+	return
 }
 
-func (p *ParquetEngine) FetchColumn(col string, n int64, op string, compareTo value.Value) ([]value.Value, error) {
-	vals, err := p.fetch(col, n, op, compareTo)
-	if err != nil {
-		return nil, err
+func filterDup(cols []string) []string {
+	m := make(map[string]bool)
+	for _, v := range cols {
+		m[v] = true
 	}
-	return vals, nil
-}
-
-func (p *ParquetEngine) fetch(col string, n int64, op string, compareTo value.Value) ([]value.Value, error) {
-	cr, err := p.GetColumnReader()
-	if err != nil {
-		return nil, err
+	result := make([]string, 0, len(m))
+	for key, _ := range m {
+		result = append(result, key)
 	}
-	vals, _, _, err := cr.ReadColumnByPath(p.schema.GetName()+"."+col, n)
-	if err != nil {
-		return nil, err
-	}
-	rs := make([]value.Value, 0)
-	for _, _v := range vals {
-		v := value.NewFromParquetValue(_v)
-		ok := true
-		if compareTo != nil {
-			ok, err = value.Compare(v, compareTo, op)
-			if err != nil {
-				return nil, err
-			}
-		}
-		if ok {
-			rs = append(rs, v)
-		}
-	}
-	return rs, nil
+	return result
 }

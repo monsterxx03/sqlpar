@@ -43,9 +43,8 @@ type (
 
 type (
 	Expr interface {
-		Evaluate(val value.Value) (bool, error)
+		Evaluate(row map[string]value.Value) (bool, error)
 		GetTargetCols() []string
-		ShouldApply(col string) bool
 	}
 	ComparisonExpr struct {
 		Left     string
@@ -65,9 +64,13 @@ type (
 	}
 )
 
-func (e *ComparisonExpr) Evaluate(val value.Value) (bool, error) {
-	if value.IsComparable(val, e.Right) {
-		return false, fmt.Errorf("%t and %t are not comparable", val, e.Right)
+func (e *ComparisonExpr) Evaluate(row map[string]value.Value) (bool, error) {
+	val, ok := row[e.Left]
+	if !ok {
+		return true, nil
+	}
+	if !value.IsComparable(val, e.Right) {
+		return false, fmt.Errorf("%s: %t and %t are not comparable", e.Left, val, e.Right)
 	}
 	if ok, err := value.Compare(val, e.Right, e.Operator); err != nil {
 		return false, err
@@ -75,20 +78,17 @@ func (e *ComparisonExpr) Evaluate(val value.Value) (bool, error) {
 		return ok, nil
 	}
 }
-func (e *ComparisonExpr) ShouldApply(col string) bool {
-	return e.Left == col
-}
 
 func (e *ComparisonExpr) GetTargetCols() []string {
 	return []string{e.Left}
 }
 
-func (e *AndExpr) Evaluate(val value.Value) (bool, error) {
-	leftOk, err := e.Left.Evaluate(val)
+func (e *AndExpr) Evaluate(row map[string]value.Value) (bool, error) {
+	leftOk, err := e.Left.Evaluate(row)
 	if err != nil {
 		return false, err
 	}
-	rightOk, err := e.Right.Evaluate(val)
+	rightOk, err := e.Right.Evaluate(row)
 	if err != nil {
 		return false, err
 	}
@@ -98,49 +98,38 @@ func (e *AndExpr) Evaluate(val value.Value) (bool, error) {
 	return false, nil
 }
 
-func (e *AndExpr) ShouldApply(col string) bool {
-	return e.Left.ShouldApply(col) || e.Right.ShouldApply(col)
-}
-
 func (e *AndExpr) GetTargetCols() []string {
 	return filterDup(append(e.Left.GetTargetCols(), e.Right.GetTargetCols()...))
 }
 
-func (e *OrExpr) Evaluate(val value.Value) (bool, error) {
-	leftOk, err := e.Left.Evaluate(val)
+func (e *OrExpr) Evaluate(row map[string]value.Value) (bool, error) {
+	leftOk, err := e.Left.Evaluate(row)
 	if err != nil {
 		return false, err
 	}
 	if leftOk {
 		return true, nil
 	}
-	rightOk, err := e.Right.Evaluate(val)
+	rightOk, err := e.Right.Evaluate(row)
 	if err != nil {
 		return false, err
 	}
 	return rightOk, nil
 }
 
-func (e *OrExpr) ShouldApply(col string) bool {
-	return e.Left.ShouldApply(col) || e.Right.ShouldApply(col)
-}
-
 func (e *OrExpr) GetTargetCols() []string {
 	return filterDup(append(e.Left.GetTargetCols(), e.Right.GetTargetCols()...))
 }
 
-func (e *NotExpr) Evaluate(val value.Value) (bool, error) {
-	ok, err := e.Expr.Evaluate(val)
+func (e *NotExpr) Evaluate(row map[string]value.Value) (bool, error) {
+	ok, err := e.Expr.Evaluate(row)
 	if err != nil {
 		return false, err
 	}
 	return !ok, nil
 }
-func (e *NotExpr) ShouldApply(col string) bool {
-	return e.Expr.ShouldApply(col)
-}
 
-func (e *NotExpr) GetTargetCols() []string{
+func (e *NotExpr) GetTargetCols() []string {
 	return filterDup(e.Expr.GetTargetCols())
 }
 
@@ -166,12 +155,12 @@ func NewWhere(expr Expr) *Where {
 	return &Where{expr}
 }
 
-func filterDup(cols []string) []string{
+func filterDup(cols []string) []string {
 	m := make(map[string]bool)
 	for _, v := range cols {
 		m[v] = true
 	}
-	result := make([]string, len(m), len(m))
+	result := make([]string, 0, len(m))
 	for key, _ := range m {
 		result = append(result, key)
 	}

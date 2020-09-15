@@ -243,7 +243,6 @@ func IsValidNumType(t reflect.Kind) bool {
 
 func IsComparable(v1, v2 Value) bool {
 	t1, t2 := reflect.TypeOf(v1).Kind(), reflect.TypeOf(v2).Kind()
-	fmt.Println(t1, t2)
 	if t1 == t2 {
 		return true
 	}
@@ -258,7 +257,7 @@ func Compare(v1, v2 Value, op string) (bool, error) {
 		return false, fmt.Errorf("%s and %s are not comparable", reflect.TypeOf(v1), reflect.TypeOf(v2))
 	}
 	switch op {
-	case "==":
+	case "=":
 		return v1.Eq(v2), nil
 	case "!=", "<>":
 		return !v1.Eq(v2), nil

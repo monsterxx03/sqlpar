@@ -1,10 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/monsterxx03/sqlpar/engine"
 	"github.com/monsterxx03/sqlpar/parser"
-	"github.com/monsterxx03/sqlpar/value"
 	"github.com/peterh/liner"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
@@ -15,6 +15,8 @@ import (
 )
 
 //go:generate goyacc -o parser/parser.go parser/parser.y
+
+var historyFile = "/home/will/.sqlpar_history"
 
 func ExecuteSelect(pr *reader.ParquetReader, stmt *parser.Select) error {
 	allFields := false
@@ -81,6 +83,32 @@ func RunShell() {
 
 	var path = os.Args[1]
 
+	var file *os.File
+	_, err := os.Stat(historyFile)
+	if os.IsNotExist(err) {
+		file, err = os.Create(historyFile)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		file, err = os.OpenFile(historyFile, os.O_RDWR, 0666)
+		if err != nil {
+			panic(err)
+		}
+		ll.ReadHistory(file)
+	}
+	defer func() {
+		_, err := ll.WriteHistory(file)
+		if err != nil {
+			panic(err)
+		}
+		file.Close()
+	}()
+	s := bufio.NewScanner(file)
+	for s.Scan() {
+		ll.AppendHistory(s.Text())
+	}
+
 	en, err := engine.NewParquetEngine(path)
 	if err != nil {
 		panic(err)
@@ -90,9 +118,9 @@ func RunShell() {
 		if err != nil {
 			panic(err)
 		}
-		input, err := ll.Prompt(">> ")
+		input, err := ll.Prompt("sqlpar> ")
 		if err == io.EOF {
-			os.Exit(0)
+			return
 		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -114,20 +142,16 @@ func RunShell() {
 			fmt.Println(err)
 			continue
 		}
-		en.Execute(stmt)
+		result, err := en.Execute(stmt)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		fmt.Println(result)
 	}
 }
 
 func test() {
-	en, err := engine.NewParquetEngine("bin/json_schema.parquet")
-	if err != nil {
-		panic(err)
-	}
-	res, err := en.FetchColumn("Age", 2, "==", value.Int{20})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(res)
 }
 
 func main() {

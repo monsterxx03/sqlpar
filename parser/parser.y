@@ -165,12 +165,15 @@ limit_opt:
   }
 
 value:
-  '"' IDENT '"'
+    '"' '"'
+    {
+        $$ = value.Str{Val: ""}
+    } 
+|  '"' IDENT '"'
     {
     	$$ = value.Str{Val: $2}
     }
-|
-    INTEGER
+| INTEGER
     {
       v, _ := strconv.Atoi($1)
       $$ = value.Int{Val: int64(v)}
