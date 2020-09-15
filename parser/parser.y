@@ -116,7 +116,7 @@ where_opt:
     }
 | WHERE expr 
     {
-    $$ = &Where{$2}
+    $$ = NewWhere($2)
     } 
 
 expr:
@@ -160,9 +160,9 @@ limit_opt:
   }
 
 value:
-    IDENT
+  '"' IDENT '"'
     {
-      $$ = value.Str{Val: $1}
+    	$$ = value.Str{Val: $2}
     }
 |
     INTEGER

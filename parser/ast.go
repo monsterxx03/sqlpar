@@ -83,6 +83,6 @@ func NewSelect(fields SelectFieldList, table string, where *Where, limit *Limit)
 		Where: where, Limit: limit}
 }
 
-func NewWhere() *Where {
-	return nil
+func NewWhere(expr Expr) *Where {
+	return &Where{expr}
 }

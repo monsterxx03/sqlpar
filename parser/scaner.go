@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"strings"
 	"unicode"
 )
 
@@ -13,6 +14,15 @@ type Scanner struct {
 	src []rune
 	pos int
 	buf bytes.Buffer
+}
+
+var keywords =  map[string]int{
+	"SELECT": SELECT,
+	"WHERE": WHERE,
+	"FROM": FROM,
+	"LIMIT": LIMIT,
+	"OFFSET": OFFSET,
+	"AND": AND, "OR": OR, "NOT": NOT,
 }
 
 func NewScanner(sql string) *Scanner {
@@ -31,12 +41,25 @@ func (s *Scanner) Scan() (*Token, error) {
 	case isIdentChar(ch):
 		token = rune(s.scanIdent(ch))
 		lit = s.buf.String()
-		switch lit {
-		case "SELECT":
-			token = SELECT
+		_t, ok := keywords[strings.ToUpper(lit)]
+		if ok {
+			token = rune(_t)
 		}
 	case isOperatorChar(ch):
-		s.scanOperator(ch)
+		char := s.scanOperator(ch)
+		if s.peek() == '=' {
+			s.next()
+			if char == '>' {
+				lit = ">="
+				token = GE
+			} else if char == '<' {
+				lit = "<="
+				token = LE
+			} else if char == '!' {
+				lit = "!="
+				token = NE
+			}
+		}
 	}
 	return &Token{Token: int(token), Literal: lit}, nil
 }
@@ -68,13 +91,16 @@ func (s *Scanner) scanIdent(head rune) int {
 	return IDENT
 }
 
-func (s *Scanner) scanOperator(head rune) {
+func (s *Scanner) scanOperator(head rune) rune {
 	s.buf.Reset()
 
+	char := head
 	s.buf.WriteRune(head)
 	for isOperatorChar(s.peek()) {
-		s.buf.WriteRune(s.next())
+		char = s.next()
+		s.buf.WriteRune(char)
 	}
+	return char
 }
 
 func (s *Scanner) ignoreSpace() {
@@ -118,3 +144,4 @@ func isIdentChar(ch rune) bool {
 func isOperatorChar(ch rune) bool {
 	return ch == '=' || ch == '>' || ch == '<' || ch == '!'
 }
+
