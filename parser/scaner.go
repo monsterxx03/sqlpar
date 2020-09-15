@@ -25,6 +25,10 @@ var keywords =  map[string]int{
 	"AND": AND, "OR": OR, "NOT": NOT,
 }
 
+var operators = map[string]int{
+	">": '>', "<": '<', ">=": GE, "<=": LE, "=": '=', "!=": NE,
+}
+
 func NewScanner(sql string) *Scanner {
 	return &Scanner{src: []rune(sql)}
 }
@@ -46,20 +50,9 @@ func (s *Scanner) Scan() (*Token, error) {
 			token = rune(_t)
 		}
 	case isOperatorChar(ch):
-		char := s.scanOperator(ch)
-		if s.peek() == '=' {
-			s.next()
-			if char == '>' {
-				lit = ">="
-				token = GE
-			} else if char == '<' {
-				lit = "<="
-				token = LE
-			} else if char == '!' {
-				lit = "!="
-				token = NE
-			}
-		}
+		s.scanOperator(ch)
+		lit = s.buf.String()
+		token = rune(operators[lit])
 	}
 	return &Token{Token: int(token), Literal: lit}, nil
 }
@@ -91,16 +84,12 @@ func (s *Scanner) scanIdent(head rune) int {
 	return IDENT
 }
 
-func (s *Scanner) scanOperator(head rune) rune {
+func (s *Scanner) scanOperator(head rune) {
 	s.buf.Reset()
-
-	char := head
 	s.buf.WriteRune(head)
 	for isOperatorChar(s.peek()) {
-		char = s.next()
-		s.buf.WriteRune(char)
+		s.buf.WriteRune(s.next())
 	}
-	return char
 }
 
 func (s *Scanner) ignoreSpace() {

@@ -25,6 +25,14 @@ func (s *ParquetSchema) GetName() string {
 	return s.Name
 }
 
+func (s *ParquetSchema) GetAllFieldNames() []string {
+	cols := make([]string, 0, len(s.Fields))
+	for _, f := range s.Fields {
+		cols = append(cols, f.Name)
+	}
+	return cols
+}
+
 func NewParquetSchema(schemas []*parquet.SchemaElement) *ParquetSchema {
 	stack := make([]*Field, 0)
 	root := NewField(schemas[0])

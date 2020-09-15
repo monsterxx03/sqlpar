@@ -183,6 +183,14 @@ func (i Alien) String() string { return fmt.Sprint(i.Val) }
 type Int96 struct {
 }
 
+func NewFromParquetValues(vals []interface{}) []Value {
+	r := make([]Value, len(vals))
+	for i, v := range vals {
+		r[i] = NewFromParquetValue(v)
+	}
+	return r
+}
+
 func NewFromParquetValue(v interface{}) Value {
 	switch v.(type) {
 	case int:

@@ -30,7 +30,7 @@ func setResult(yylex interface{}, stmt Statement) {
 %token <str> IDENT INTEGER FLOAT
 
 %type <expr> expr
-%type <str> table_name col func_name compare 
+%type <str> table_name col func_name compare
 %type <value> value
 %type <stmt> command
 %type <sel> select_stmt
@@ -120,6 +120,11 @@ where_opt:
     } 
 
 expr:
+  '(' expr ')'
+  {
+    $$ = $2
+  }
+|
   col compare value 
   {
      $$ = &ComparisonExpr{Left: $1, Operator: $2, Right: $3}

@@ -114,16 +114,7 @@ func RunShell() {
 			fmt.Println(err)
 			continue
 		}
-		switch v := stmt.(type) {
-		case *parser.Select:
-			if err := runSelect(en, v); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-		case *parser.Desc:
-			fmt.Println(v)
-		default:
-			continue
-		}
+		en.Execute(stmt)
 	}
 }
 

@@ -46,6 +46,34 @@ var cases = []struct {
 				}},
 		},
 	},
+	{
+		sql: "select * from user where age >= 10 and name!=\"haha\"",
+		parsed: &Select{
+			Fields:    SelectFieldList{&StarExpr{}},
+			TableName: "user",
+			Where: &Where{
+				Expr: &AndExpr{
+					Left:  &ComparisonExpr{Left: "age", Operator: ">=", Right: value.Int{10}},
+					Right: &ComparisonExpr{Left: "name", Operator: "!=", Right: value.Str{"haha"}},
+				}},
+		},
+	},
+	{
+		sql: "select * from user where age >= 10 or name=\"haha\" and (age < 100)",
+		parsed: &Select{
+			Fields: SelectFieldList{&StarExpr{}},
+			TableName: "user",
+			Where: &Where{
+				Expr: &AndExpr{
+					Left: &OrExpr{
+						Left: &ComparisonExpr{Left: "age", Operator: ">=", Right: value.Int{10}},
+						Right: &ComparisonExpr{Left: "name", Operator: "=", Right: value.Str{"haha"}},
+					},
+					Right: &ComparisonExpr{Left: "age", Operator: "<", Right: value.Int{100}},
+				},
+			},
+		},
+	},
 }
 
 func TestParser(t *testing.T) {
