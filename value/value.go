@@ -256,6 +256,10 @@ func IsComparable(v1, v2 Value) bool {
 		if _, ok := v2.(Str); ok {
 			return true
 		}
+	case Null:
+		if _, ok := v2.(Null); ok {
+			return true
+		}
 	default:
 		return false
 	}

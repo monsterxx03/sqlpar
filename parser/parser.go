@@ -96,7 +96,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser/parser.y:138
+//line parser/parser.y:131
 
 func Parse(s string) (Statement, error) {
 	l := NewLexer(s)
@@ -539,67 +539,67 @@ yydefault:
 		}
 	case 2:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:52
+//line parser/parser.y:53
 		{
 			yyVAL.stmt = yyDollar[1].sel
 		}
 	case 3:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line parser/parser.y:56
+//line parser/parser.y:57
 		{
 			yyVAL.sel = NewSelect(yyDollar[2].sel_field_list, yyDollar[4].str, yyDollar[5].where, yyDollar[6].limit)
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:59
+//line parser/parser.y:60
 		{
 			yyVAL.sel_field_list = SelectFieldList{yyDollar[1].sel_field}
 		}
 	case 5:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:60
+//line parser/parser.y:61
 		{
 			yyVAL.sel_field_list = append(yyVAL.sel_field_list, yyDollar[3].sel_field)
 		}
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:63
+//line parser/parser.y:64
 		{
 			yyVAL.sel_field = &StarExpr{}
 		}
 	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:64
+//line parser/parser.y:65
 		{
 			yyVAL.sel_field = &ColExpr{yyDollar[1].str}
 		}
 	case 8:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:65
+//line parser/parser.y:66
 		{
 			yyVAL.sel_field = &FuncExpr{Name: yyDollar[1].str, Fields: yyDollar[3].sel_field_list}
 		}
 	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:68
+//line parser/parser.y:69
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:71
+//line parser/parser.y:72
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:74
+//line parser/parser.y:75
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 12:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser/parser.y:77
+//line parser/parser.y:78
 		{
 			yyVAL.where = nil
 		}
@@ -611,50 +611,50 @@ yydefault:
 		}
 	case 14:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:83
+//line parser/parser.y:82
 		{
 			yyVAL.expr = yyDollar[2].expr
 		}
 	case 15:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:86
+//line parser/parser.y:83
 		{
 			yyVAL.expr = &ComparisonExpr{Left: yyDollar[1].str, Operator: yyDollar[2].str, Right: yyDollar[3].value}
 		}
 	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:88
+//line parser/parser.y:84
 		{
 			yyVAL.expr = &AndExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 17:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:90
+//line parser/parser.y:85
 		{
 			yyVAL.expr = &OrExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 18:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:92
+//line parser/parser.y:86
 		{
 			yyVAL.expr = &NotExpr{Expr: yyDollar[2].expr}
 		}
 	case 19:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser/parser.y:95
+//line parser/parser.y:88
 		{
 			yyVAL.limit = nil
 		}
 	case 20:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:97
+//line parser/parser.y:90
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			yyVAL.limit = &Limit{Rowcount: limit}
 		}
 	case 21:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:102
+//line parser/parser.y:95
 		{
 			offset, _ := strconv.Atoi(yyDollar[2].str)
 			limit, _ := strconv.Atoi(yyDollar[4].str)
@@ -662,7 +662,7 @@ yydefault:
 		}
 	case 22:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:108
+//line parser/parser.y:101
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			offset, _ := strconv.Atoi(yyDollar[4].str)
@@ -670,81 +670,81 @@ yydefault:
 		}
 	case 23:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:115
+//line parser/parser.y:108
 		{
 			yyVAL.value = value.Str{Val: ""}
 		}
 	case 24:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:116
+//line parser/parser.y:109
 		{
 			yyVAL.value = value.Str{Val: yyDollar[2].str}
 		}
 	case 25:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:118
+//line parser/parser.y:111
 		{
 			v, _ := strconv.Atoi(yyDollar[1].str)
 			yyVAL.value = value.Int{Val: int64(v)}
 		}
 	case 26:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:123
+//line parser/parser.y:116
 		{
 			v, _ := strconv.ParseFloat(yyDollar[1].str, 64)
 			yyVAL.value = value.Float{Val: v}
 		}
 	case 27:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:127
+//line parser/parser.y:120
 		{
 			yyVAL.value = value.Bool{true}
 		}
 	case 28:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:128
+//line parser/parser.y:121
 		{
 			yyVAL.value = value.Bool{false}
 		}
 	case 29:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:129
+//line parser/parser.y:122
 		{
 			yyVAL.value = value.Null{}
 		}
 	case 30:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:132
+//line parser/parser.y:125
 		{
 			yyVAL.str = "="
 		}
 	case 31:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:133
+//line parser/parser.y:126
 		{
 			yyVAL.str = "<"
 		}
 	case 32:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:134
+//line parser/parser.y:127
 		{
 			yyVAL.str = ">"
 		}
 	case 33:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:135
+//line parser/parser.y:128
 		{
 			yyVAL.str = "<="
 		}
 	case 34:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:136
+//line parser/parser.y:129
 		{
 			yyVAL.str = ">="
 		}
 	case 35:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:137
+//line parser/parser.y:130
 		{
 			yyVAL.str = "!="
 		}
