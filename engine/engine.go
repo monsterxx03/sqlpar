@@ -75,32 +75,39 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 	if err != nil {
 		return nil, err
 	}
-	limit := total
+	limit := int(total)
 	if stmt.Limit != nil {
-		limit = int64(stmt.Limit.Rowcount)
+		limit = stmt.Limit.Rowcount
+	}
+	cr, err := p.GetColumnReader()
+	if err != nil {
+		return nil, err
 	}
 	var result *RecordSet
 	if len(filterCols) > 0 {
 		cols = append(cols, filterCols...)
 		cols = filterDup(cols)
-		result, err = p.FetchRows(cols, limit)
-		if err != nil {
-			return nil, err
-		}
-		if len(result.Rows) == 0 {
-			return result, nil
-		}
-		rows := make([]value.Row, 0)
-		for _, row  := range result.Rows {
-			if ok, err := stmt.Where.Expr.Evaluate(result.Cols, row); err != nil {
+		result = &RecordSet{Cols: cols, Rows: make([]value.Row, 0)}
+		for {
+			res, err := p.FetchRows(cr, cols, limit - len(result.Rows))
+			if err != nil {
 				return nil, err
-			} else if ok {
-				rows = append(rows, row)
+			}
+			if len(res.Rows) == 0 {
+				return result, nil
+			}
+			res, err = filter(stmt.Where.Expr, res)
+			if err != nil {
+				return nil, err
+			}
+			result.Rows = append(result.Rows, res.Rows...)
+			if len(result.Rows) >= int(limit) {
+				result.Rows = result.Rows[:limit]
+				break
 			}
 		}
-		result.Rows = rows
 	} else {
-		result, err = p.FetchRows(cols, limit)
+		result, err = p.FetchRows(cr, cols, limit)
 		if err != nil {
 			return nil, err
 		}
@@ -108,6 +115,18 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 	return result, nil
 }
 
+func filter(expr parser.Expr, result *RecordSet) (*RecordSet, error){
+	rows := make([]value.Row, 0)
+	for _, row  := range result.Rows {
+		if ok, err := expr.Evaluate(result.Cols, row); err != nil {
+			return nil, err
+		} else if ok {
+			rows = append(rows, row)
+		}
+	}
+	result.Rows = rows
+	return result, nil
+}
 
 func (p *ParquetEngine) GetTotalRowCount() (int64, error) {
 	cr, err := p.GetColumnReader()
@@ -121,18 +140,13 @@ func (p *ParquetEngine) GetColumnReader() (*reader.ParquetReader, error) {
 	return reader.NewParquetColumnReader(p.fr, 2)
 }
 
-func (p *ParquetEngine) FetchRows(cols []string, limit int64) (result *RecordSet, err error) {
-	cr, err := p.GetColumnReader()
-	if err != nil {
-		return
-	}
+func (p *ParquetEngine) FetchRows(cr *reader.ParquetReader, cols []string, limit int) (result *RecordSet, err error) {
 	result = &RecordSet{Cols: cols, Rows: make([]value.Row, 0)}
 	cidx := -1
 	for _, col := range cols {
 		cidx++
 		var vals []interface{}
-		// TODO loop fetch, if read count < limit
-		vals, _, _, err = cr.ReadColumnByPath(p.schema.GetName()+"."+col, limit)
+		vals, _, _, err = cr.ReadColumnByPath(p.schema.GetName()+"."+col, int64(limit))
 		if err != nil {
 			return
 		}
