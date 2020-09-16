@@ -79,6 +79,22 @@ func (e *ComparisonExpr) Evaluate(cols []string, row value.Row) (bool, error) {
 		return true, nil
 	}
 	val := row[idx]
+	if _, ok := val.(value.Null); ok {
+		if _, iok := e.Right.(value.Null); iok {
+			if e.Operator == "=" {
+				return true, nil
+			}
+			return false, nil
+		}
+		return false, nil
+	}
+	// left is not null
+	if _, ok := e.Right.(value.Null); ok {
+		if e.Operator == "!=" {
+			return true, nil
+		}
+		return false, nil
+	}
 	if !value.IsComparable(val, e.Right) {
 		return false, fmt.Errorf("%s: %t and %t are not comparable", e.Left, val, e.Right)
 	}

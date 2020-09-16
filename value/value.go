@@ -204,6 +204,8 @@ type Int96 struct {
 
 func NewFromParquetValue(v interface{}) Value {
 	switch v.(type) {
+	case nil:
+		return Null{}
 	case int:
 		return Int{Val: int64(v.(int))}
 	case int8:
