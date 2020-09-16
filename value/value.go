@@ -168,6 +168,15 @@ func (i Bool) Le(v Value) bool { return i.Val == v.(Bool).Val || v.(Bool).Val ==
 
 func (i Bool) Eq(v Value) bool { return i.Val == v.(Bool).Val }
 
+type Null struct {}
+
+func (i Null) String() string { return "null" }
+func (i Null) Gt(v Value) bool { return false }
+func (i Null) Ge(v Value) bool { return false }
+func (i Null) Lt(v Value) bool { return false }
+func (i Null) Le(v Value) bool { return false }
+func (i Null) Eq(v Value) bool { return true  }
+
 type Alien struct {
 	Val interface{}
 }

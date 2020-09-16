@@ -26,8 +26,8 @@ func setResult(yylex interface{}, stmt Statement) {
 }
 
 %token ILLEGAL
-%token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET 
-%token <str> IDENT INTEGER FLOAT
+%token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET
+%token <str> IDENT INTEGER FLOAT TRUE FALSE NULL
 
 %type <expr> expr
 %type <str> table_name col func_name compare
@@ -47,105 +47,52 @@ func setResult(yylex interface{}, stmt Statement) {
 %%
 
 any_command:
-    command
-    {
-        setResult(yylex, $1)
-    }
-
+    command { setResult(yylex, $1) }
 command:
-    select_stmt
-    {
-        $$ = $1
-    }
+    select_stmt { $$ = $1 }
 
 select_stmt:
   SELECT sel_field_list FROM table_name where_opt limit_opt
-  {
-    $$ = NewSelect($2, $4, $5, $6)
-  }
-
-
+  {  $$ = NewSelect($2, $4, $5, $6) }
 
 sel_field_list:
-    sel_field
-    {
-        $$ = SelectFieldList{$1}
-    }
-| sel_field_list ',' sel_field
-    {
-        $$ = append($$, $3)
-    }
-
+    sel_field { $$ = SelectFieldList{$1} }
+| sel_field_list ',' sel_field { $$ = append($$, $3) }
 
 sel_field:
-'*'
-    {
-        $$ = &StarExpr{}
-    }
-| col
-    {
-        $$ = &ColExpr{$1}
-    }
-| func_name '(' sel_field_list ')'
-    {
-        $$ = &FuncExpr{Name: $1, Fields: $3}
-    }
+    '*' { $$ = &StarExpr{} }
+| col { $$ = &ColExpr{$1} }
+| func_name '(' sel_field_list ')' { $$ = &FuncExpr{Name: $1, Fields: $3} }
 
 func_name:
-    IDENT
-    {
-        $$ = $1
-    }
+    IDENT { $$ = $1 }
 
 table_name:
-    IDENT
-    { 
-      $$ = $1
-    }
-
+    IDENT { $$ = $1 }
 
 col:
-  IDENT
-  {
-      $$ = $1
-  }
+  IDENT { $$ = $1 }
 
 where_opt:
-    {
-        $$ = nil
-    }
-| WHERE expr 
-    {
-    $$ = NewWhere($2)
-    } 
+    { $$ = nil }
+| WHERE expr
+    { $$ = NewWhere($2) }
 
 expr:
   '(' expr ')'
-  {
-    $$ = $2
-  }
+    { $$ = $2 }
 |
   col compare value 
-  {
-     $$ = &ComparisonExpr{Left: $1, Operator: $2, Right: $3}
-  } 
+    { $$ = &ComparisonExpr{Left: $1, Operator: $2, Right: $3} }
 | expr AND expr
-  {
-    $$ = &AndExpr{Left: $1, Right: $3}
-  }
+    { $$ = &AndExpr{Left: $1, Right: $3} }
 | expr OR  expr
-  {
-    $$ = &OrExpr{Left: $1, Right: $3}
-  }
+    { $$ = &OrExpr{Left: $1, Right: $3} }
 | NOT expr
-  {
-    $$ = &NotExpr{Expr: $2}
-  }
+    { $$ = &NotExpr{Expr: $2} }
 
 limit_opt:
-  {
-    $$ = nil
-  }
+    { $$ = nil }
 | LIMIT INTEGER
     {
         limit, _ := strconv.Atoi($2)
@@ -165,45 +112,24 @@ limit_opt:
   }
 
 value:
-    '"' '"'
-    {
-        $$ = value.Str{Val: ""}
-    } 
-|  '"' IDENT '"'
-    {
-    	$$ = value.Str{Val: $2}
-    }
+    '"' '"' { $$ = value.Str{Val: ""} }
+|  '"' IDENT '"' { $$ = value.Str{Val: $2} }
 | INTEGER
     {
       v, _ := strconv.Atoi($1)
       $$ = value.Int{Val: int64(v)}
     }
+| TRUE { $$ = value.Bool{true} }
+| FALSE { $$ = value.Bool{false} }
+| NULL { $$ = value.Null{} }
 
 compare:
-  '='
-  {
-    $$ = "="
-  }
-| '<'
-  {
-    $$ = "<"
-  }
-| '>'
-  {
-    $$ = ">"
-  }
-| LE
-  {
-    $$ = "<="
-  }
-| GE 
-    {
-    $$ = ">="
-    }
-| NE
-   {
-    $$ = "!="
-    }
+  '=' { $$ = "=" }
+| '<' { $$ = "<" }
+| '>' { $$ = ">" }
+| LE { $$ = "<=" }
+| GE { $$ = ">=" }
+| NE { $$ = "!=" }
 %%
 
 func Parse(s string) (Statement, error) {

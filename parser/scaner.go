@@ -17,12 +17,10 @@ type Scanner struct {
 }
 
 var keywords =  map[string]int{
-	"SELECT": SELECT,
-	"WHERE": WHERE,
-	"FROM": FROM,
-	"LIMIT": LIMIT,
-	"OFFSET": OFFSET,
+	"SELECT": SELECT, "WHERE": WHERE, "FROM": FROM,
+	"LIMIT": LIMIT, "OFFSET": OFFSET,
 	"AND": AND, "OR": OR, "NOT": NOT,
+	"TRUE": TRUE, "FALSE": FALSE, "NULL": NULL,
 }
 
 var operators = map[string]int{

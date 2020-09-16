@@ -5,71 +5,56 @@ import (
 	"fmt"
 	"github.com/monsterxx03/sqlpar/engine"
 	"github.com/monsterxx03/sqlpar/parser"
+	"github.com/monsterxx03/sqlpar/value"
 	"github.com/peterh/liner"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
-	"text/tabwriter"
 )
 
 //go:generate goyacc -o parser/parser.go parser/parser.y
 
-var historyFile = "/home/will/.sqlpar_history"
-
-func ExecuteSelect(pr *reader.ParquetReader, stmt *parser.Select) error {
-	allFields := false
-	tgtFields := make([]string, 0, len(stmt.Fields))
-	for _, field := range stmt.Fields {
-		switch v := field.(type) {
-		case *parser.StarExpr:
-			allFields = true
-			break
-		case *parser.ColExpr:
-			tgtFields = append(tgtFields, v.Name)
-		default:
-			return fmt.Errorf("don't support %+v", v)
-		}
-	}
-	if allFields {
-		// TODO query all cols
-		fmt.Println("query all")
-		return nil
-	}
-	limit := pr.GetNumRows()
-	if stmt.Limit != nil {
-		limit = int64(stmt.Limit.Rowcount)
-	}
-	result := make([][]interface{}, 0, len(tgtFields))
-	for _, field := range tgtFields {
-		val, _, _, err := pr.ReadColumnByPath(stmt.TableName+"."+field, limit)
-		if err != nil {
-			return err
-		}
-		result = append(result, val)
-	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-	fmt.Fprintln(w, strings.Join(tgtFields, "\t")+"\t")
-	for i := int64(0); i < limit; i++ {
-		line := make([]string, 0, len(tgtFields))
-		for _, col := range result {
-			line = append(line, fmt.Sprint(col[i]))
-		}
-		fmt.Fprintln(w, strings.Join(line, "\t")+"\t")
-	}
-	w.Flush()
-	return nil
-}
-
-func runSelect(en *engine.ParquetEngine, stmt *parser.Select) error {
-	fmt.Printf("%+v", stmt)
-	return nil
-}
+var historyFile = "~/.sqlpar_history"
 
 func showTable(pr *reader.ParquetReader) {
 	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
 	fmt.Println(tree.OutputJsonSchema())
+}
+
+func expandPath(path string) (string, error) {
+	if strings.HasPrefix(path, "~/") {
+		parts := strings.SplitN(path, "/", 2)
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		return filepath.Join(home, parts[1]), nil
+	}
+	return path, nil
+}
+
+func loadHistory() (*os.File, error) {
+	var file *os.File
+	path, err := expandPath(historyFile)
+	if err != nil {
+		return nil, err
+	}
+	_, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		file, err = os.Create(path)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		file, err = os.OpenFile(path, os.O_RDWR, 0666)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return file, nil
 }
 
 func RunShell() {
@@ -82,20 +67,9 @@ func RunShell() {
 	ll.SetCtrlCAborts(true)
 
 	var path = os.Args[1]
-
-	var file *os.File
-	_, err := os.Stat(historyFile)
-	if os.IsNotExist(err) {
-		file, err = os.Create(historyFile)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		file, err = os.OpenFile(historyFile, os.O_RDWR, 0666)
-		if err != nil {
-			panic(err)
-		}
-		ll.ReadHistory(file)
+	file, err := loadHistory()
+	if err != nil {
+		panic(err)
 	}
 	defer func() {
 		_, err := ll.WriteHistory(file)
@@ -151,10 +125,10 @@ func RunShell() {
 	}
 }
 
-func test() {
+func printResult(rows map[string][]value.Value) {
+
 }
 
 func main() {
 	RunShell()
-	// test()
 }
