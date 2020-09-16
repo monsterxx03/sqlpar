@@ -2,7 +2,6 @@ package value
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
 
@@ -179,14 +178,14 @@ func (i Bool) Le(v Value) bool { return i.Val == v.(Bool).Val || v.(Bool).Val ==
 
 func (i Bool) Eq(v Value) bool { return i.Val == v.(Bool).Val }
 
-type Null struct {}
+type Null struct{}
 
-func (i Null) String() string { return "null" }
+func (i Null) String() string  { return "null" }
 func (i Null) Gt(v Value) bool { return false }
 func (i Null) Ge(v Value) bool { return false }
 func (i Null) Lt(v Value) bool { return false }
 func (i Null) Le(v Value) bool { return false }
-func (i Null) Eq(v Value) bool { return true  }
+func (i Null) Eq(v Value) bool { return true }
 
 type Alien struct {
 	Val interface{}
@@ -201,14 +200,6 @@ func (i Alien) Eq(v Value) bool { return false }
 func (i Alien) String() string { return fmt.Sprint(i.Val) }
 
 type Int96 struct {
-}
-
-func NewFromParquetValues(vals []interface{}) []Value {
-	r := make([]Value, len(vals))
-	for i, v := range vals {
-		r[i] = NewFromParquetValue(v)
-	}
-	return r
 }
 
 func NewFromParquetValue(v interface{}) Value {
@@ -246,35 +237,34 @@ func NewFromParquetValue(v interface{}) Value {
 	}
 }
 
-var validIntType = map[reflect.Kind]bool{reflect.Uint: true, reflect.Uint8: true, reflect.Uint16: true, reflect.Uint32: true, reflect.Uint64: true,
-	reflect.Int: true, reflect.Int8: true, reflect.Int16: true, reflect.Int32: true, reflect.Int64: true}
-
-func IsValidIntType(t reflect.Kind) bool {
-	_, ok := validIntType[t]
-	return ok
-}
-
-func IsValidNumType(t reflect.Kind) bool {
-	if IsValidIntType(t) || t == reflect.Float32 || t == reflect.Float64 {
-		return true
-	}
-	return false
-}
-
 func IsComparable(v1, v2 Value) bool {
-	t1, t2 := reflect.TypeOf(v1).Kind(), reflect.TypeOf(v2).Kind()
-	if t1 == t2 {
-		return true
-	}
-	if IsValidNumType(t1) && IsValidNumType(t2) {
-		return true
+	switch v1.(type) {
+	case Int, Float:
+		switch v2.(type) {
+		case Int:
+			return true
+		case Float:
+			return true
+		default:
+			return false
+		}
+	case Bool:
+		if _, ok := v2.(Bool); ok {
+			return true
+		}
+	case Str:
+		if _, ok := v2.(Str); ok {
+			return true
+		}
+	default:
+		return false
 	}
 	return false
 }
 
 func Compare(v1, v2 Value, op string) (bool, error) {
 	if !IsComparable(v1, v2) {
-		return false, fmt.Errorf("%s and %s are not comparable", reflect.TypeOf(v1), reflect.TypeOf(v2))
+		return false, fmt.Errorf("%t and %t are not comparable", v1, v2)
 	}
 	switch op {
 	case "=":
