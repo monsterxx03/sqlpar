@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"text/tabwriter"
+
 	"github.com/monsterxx03/sqlpar/parser"
 	"github.com/monsterxx03/sqlpar/value"
 	"github.com/xitongsys/parquet-go-source/local"
@@ -18,7 +19,26 @@ type RecordSet struct {
 	Rows []value.Row
 }
 
-func (rs *RecordSet) String() string{
+func (rs *RecordSet) Fit(cols []string) {
+	m := make(map[string]int)
+	for i, col := range rs.Cols {
+		m[col] = i
+	}
+	rRows := make([]value.Row, len(rs.Rows))
+	for i := range rRows {
+		rRows[i] = make([]value.Value, len(cols))
+	}
+	for k, col := range cols {
+		j := m[col]
+		for i, row := range rs.Rows {
+			rRows[i][k] = row[j]
+		}
+	}
+	rs.Cols = cols
+	rs.Rows = rRows
+}
+
+func (rs *RecordSet) String() string {
 	var buf bytes.Buffer
 	w := tabwriter.NewWriter(&buf, 0, 0, 4, ' ', 0)
 	fmt.Fprintln(w, strings.Join(rs.Cols, "\t"))
@@ -85,16 +105,16 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 	}
 	var result *RecordSet
 	if len(filterCols) > 0 {
-		cols = append(cols, filterCols...)
-		cols = filterDup(cols)
-		result = &RecordSet{Cols: cols, Rows: make([]value.Row, 0)}
+		_cols := append(cols, filterCols...)
+		_cols = filterDup(_cols)
+		result = &RecordSet{Cols: _cols, Rows: make([]value.Row, 0)}
 		for {
-			res, err := p.FetchRows(cr, cols, limit - len(result.Rows))
+			res, err := p.FetchRows(cr, _cols, limit-len(result.Rows))
 			if err != nil {
 				return nil, err
 			}
 			if len(res.Rows) == 0 {
-				return result, nil
+				break
 			}
 			res, err = filter(stmt.Where.Expr, res)
 			if err != nil {
@@ -106,6 +126,7 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 				break
 			}
 		}
+		result.Fit(cols)
 	} else {
 		result, err = p.FetchRows(cr, cols, limit)
 		if err != nil {
@@ -115,9 +136,9 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 	return result, nil
 }
 
-func filter(expr parser.Expr, result *RecordSet) (*RecordSet, error){
+func filter(expr parser.Expr, result *RecordSet) (*RecordSet, error) {
 	rows := make([]value.Row, 0)
-	for _, row  := range result.Rows {
+	for _, row := range result.Rows {
 		if ok, err := expr.Evaluate(result.Cols, row); err != nil {
 			return nil, err
 		} else if ok {
@@ -156,7 +177,7 @@ func (p *ParquetEngine) FetchRows(cr *reader.ParquetReader, cols []string, limit
 		// init Rows
 		if len(result.Rows) == 0 {
 			result.Rows = make([]value.Row, len(vals))
-			for i:=0; i< len(vals); i++ {
+			for i := 0; i < len(vals); i++ {
 				result.Rows[i] = make(value.Row, len(cols))
 			}
 		}

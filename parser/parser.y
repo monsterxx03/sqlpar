@@ -62,6 +62,7 @@ sel_field { $$ = SelectFieldList{$1} }
 
 sel_field:
 '*' { $$ = &StarExpr{} }
+| '"' col '"' { $$ = &ColExpr{$2} }
 | col { $$ = &ColExpr{$1} }
 | func_name '(' sel_field_list ')' { $$ = &FuncExpr{Name: $1, Fields: $3} }
 
