@@ -84,6 +84,7 @@ var yyToknames = [...]string{
 	"IS",
 	"LIKE",
 	"IN",
+	"';'",
 	"','",
 	"'*'",
 	"'\"'",
@@ -96,7 +97,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser/parser.y:132
+//line parser/parser.y:133
 
 func Parse(s string) (Statement, error) {
 	l := NewLexer(s)
@@ -109,79 +110,82 @@ var yyExca = [...]int{
 	-1, 1,
 	1, -1,
 	-2, 0,
-	-1, 11,
-	33, 10,
-	-2, 12,
+	-1, 12,
+	34, 11,
+	-2, 13,
 }
 
 const yyPrivate = 57344
 
-const yyLast = 65
+const yyLast = 66
 
 var yyAct = [...]int{
 
-	50, 51, 52, 53, 54, 27, 32, 33, 15, 13,
-	16, 11, 58, 24, 59, 20, 30, 44, 12, 18,
-	49, 32, 33, 47, 36, 37, 38, 39, 40, 41,
-	28, 7, 8, 57, 34, 29, 42, 43, 45, 46,
-	9, 5, 13, 6, 14, 56, 55, 31, 15, 9,
-	26, 23, 9, 4, 1, 25, 22, 19, 21, 3,
-	2, 48, 35, 10, 17,
+	51, 52, 53, 54, 55, 28, 33, 34, 16, 14,
+	17, 12, 59, 25, 60, 21, 31, 45, 13, 19,
+	5, 50, 33, 34, 48, 37, 38, 39, 40, 41,
+	42, 29, 8, 9, 58, 35, 30, 43, 44, 46,
+	47, 10, 6, 14, 7, 57, 15, 56, 32, 16,
+	27, 10, 24, 4, 10, 1, 26, 23, 3, 20,
+	22, 2, 49, 36, 11, 18,
 }
 var yyPact = [...]int{
 
-	48, -1000, -1000, -1000, 0, 12, -1000, -1000, 37, -1000,
-	-23, -1000, 8, 0, -17, -1000, 0, 44, -1000, -1000,
-	-1000, -21, 41, -3, -1000, -1000, 35, 4, -3, 3,
-	-3, 7, -3, -3, -11, -12, -1000, -1000, -1000, -1000,
-	-1000, -1000, -1000, 34, 33, -1000, -1000, -1000, -1000, 1,
-	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -18, -1000,
+	48, -1000, -1000, -10, 0, -1000, 12, -1000, -1000, 38,
+	-1000, -24, -1000, 8, 0, -18, -1000, 0, 45, -1000,
+	-1000, -1000, -22, 41, -3, -1000, -1000, 36, 5, -3,
+	4, -3, 7, -3, -3, -11, -12, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000, 35, 33, -1000, -1000, -1000, -1000,
+	1, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -19,
+	-1000,
 }
 var yyPgo = [...]int{
 
-	0, 5, 64, 35, 63, 62, 61, 60, 59, 43,
-	41, 56, 55, 54,
+	0, 5, 65, 36, 64, 63, 62, 61, 58, 44,
+	42, 57, 56, 55,
 }
 var yyR1 = [...]int{
 
-	0, 13, 7, 8, 10, 10, 9, 9, 9, 9,
-	4, 2, 3, 11, 11, 1, 1, 1, 1, 1,
-	12, 12, 12, 12, 6, 6, 6, 6, 6, 6,
-	6, 5, 5, 5, 5, 5, 5,
+	0, 13, 7, 7, 8, 10, 10, 9, 9, 9,
+	9, 4, 2, 3, 11, 11, 1, 1, 1, 1,
+	1, 12, 12, 12, 12, 6, 6, 6, 6, 6,
+	6, 6, 5, 5, 5, 5, 5, 5,
 }
 var yyR2 = [...]int{
 
-	0, 1, 1, 6, 1, 3, 1, 3, 1, 4,
-	1, 1, 1, 0, 2, 3, 3, 3, 3, 2,
-	0, 2, 4, 4, 2, 3, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1,
+	0, 1, 1, 2, 6, 1, 3, 1, 3, 1,
+	4, 1, 1, 1, 0, 2, 3, 3, 3, 3,
+	2, 0, 2, 4, 4, 2, 3, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1,
 }
 var yyChk = [...]int{
 
-	-1000, -13, -7, -8, 5, -10, -9, 31, 32, -3,
-	-4, 11, 6, 30, -3, 11, 33, -2, 11, -9,
-	32, -10, -11, 7, 34, -12, 9, -1, 33, -3,
-	19, 12, 17, 18, -1, -5, 21, 22, 23, 24,
-	25, 26, -1, 30, 10, -1, -1, 34, -6, 32,
-	12, 13, 14, 15, 16, 12, 12, 32, 11, 32,
+	-1000, -13, -7, -8, 5, 30, -10, -9, 32, 33,
+	-3, -4, 11, 6, 31, -3, 11, 34, -2, 11,
+	-9, 33, -10, -11, 7, 35, -12, 9, -1, 34,
+	-3, 19, 12, 17, 18, -1, -5, 21, 22, 23,
+	24, 25, 26, -1, 31, 10, -1, -1, 35, -6,
+	33, 12, 13, 14, 15, 16, 12, 12, 33, 11,
+	33,
 }
 var yyDef = [...]int{
 
-	0, -2, 1, 2, 0, 0, 4, 6, 0, 8,
-	0, -2, 0, 0, 0, 12, 0, 13, 11, 5,
-	7, 0, 20, 0, 9, 3, 0, 14, 0, 0,
-	0, 21, 0, 0, 0, 0, 31, 32, 33, 34,
-	35, 36, 19, 0, 0, 17, 18, 15, 16, 0,
-	26, 27, 28, 29, 30, 22, 23, 24, 0, 25,
+	0, -2, 1, 2, 0, 3, 0, 5, 7, 0,
+	9, 0, -2, 0, 0, 0, 13, 0, 14, 12,
+	6, 8, 0, 21, 0, 10, 4, 0, 15, 0,
+	0, 0, 22, 0, 0, 0, 0, 32, 33, 34,
+	35, 36, 37, 20, 0, 0, 18, 19, 16, 17,
+	0, 27, 28, 29, 30, 31, 23, 24, 25, 0,
+	26,
 }
 var yyTok1 = [...]int{
 
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 20, 32, 3, 3, 3, 3, 3,
-	33, 34, 31, 3, 30, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 20, 33, 3, 3, 3, 3, 3,
+	34, 35, 32, 3, 31, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 30,
 	22, 21, 23,
 }
 var yyTok2 = [...]int{
@@ -544,213 +548,219 @@ yydefault:
 			yyVAL.stmt = yyDollar[1].sel
 		}
 	case 3:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser/parser.y:54
+		{
+			yyVAL.stmt = yyDollar[1].sel
+		}
+	case 4:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line parser/parser.y:57
+//line parser/parser.y:58
 		{
 			yyVAL.sel = NewSelect(yyDollar[2].sel_field_list, yyDollar[4].str, yyDollar[5].where, yyDollar[6].limit)
 		}
-	case 4:
+	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:60
+//line parser/parser.y:61
 		{
 			yyVAL.sel_field_list = SelectFieldList{yyDollar[1].sel_field}
 		}
-	case 5:
+	case 6:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:61
+//line parser/parser.y:62
 		{
 			yyVAL.sel_field_list = append(yyVAL.sel_field_list, yyDollar[3].sel_field)
 		}
-	case 6:
+	case 7:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:64
+//line parser/parser.y:65
 		{
 			yyVAL.sel_field = &StarExpr{}
 		}
-	case 7:
+	case 8:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:65
+//line parser/parser.y:66
 		{
 			yyVAL.sel_field = &ColExpr{yyDollar[2].str}
 		}
-	case 8:
+	case 9:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:66
+//line parser/parser.y:67
 		{
 			yyVAL.sel_field = &ColExpr{yyDollar[1].str}
 		}
-	case 9:
+	case 10:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:67
+//line parser/parser.y:68
 		{
 			yyVAL.sel_field = &FuncExpr{Name: yyDollar[1].str, Fields: yyDollar[3].sel_field_list}
 		}
-	case 10:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:70
-		{
-			yyVAL.str = yyDollar[1].str
-		}
 	case 11:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:73
+//line parser/parser.y:71
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:76
+//line parser/parser.y:74
 		{
 			yyVAL.str = yyDollar[1].str
 		}
 	case 13:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser/parser.y:77
+		{
+			yyVAL.str = yyDollar[1].str
+		}
+	case 14:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser/parser.y:79
+//line parser/parser.y:80
 		{
 			yyVAL.where = nil
 		}
-	case 14:
+	case 15:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:80
+//line parser/parser.y:81
 		{
 			yyVAL.where = NewWhere(yyDollar[2].expr)
-		}
-	case 15:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:83
-		{
-			yyVAL.expr = yyDollar[2].expr
 		}
 	case 16:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:84
 		{
-			yyVAL.expr = &ComparisonExpr{Left: yyDollar[1].str, Operator: yyDollar[2].str, Right: yyDollar[3].value}
+			yyVAL.expr = yyDollar[2].expr
 		}
 	case 17:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:85
 		{
-			yyVAL.expr = &AndExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &ComparisonExpr{Left: yyDollar[1].str, Operator: yyDollar[2].str, Right: yyDollar[3].value}
 		}
 	case 18:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:86
 		{
-			yyVAL.expr = &OrExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+			yyVAL.expr = &AndExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
 		}
 	case 19:
-		yyDollar = yyS[yypt-2 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:87
+		{
+			yyVAL.expr = &OrExpr{Left: yyDollar[1].expr, Right: yyDollar[3].expr}
+		}
+	case 20:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser/parser.y:88
 		{
 			yyVAL.expr = &NotExpr{Expr: yyDollar[2].expr}
 		}
-	case 20:
+	case 21:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line parser/parser.y:89
+//line parser/parser.y:90
 		{
 			yyVAL.limit = nil
 		}
-	case 21:
+	case 22:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:91
+//line parser/parser.y:92
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			yyVAL.limit = &Limit{Rowcount: limit}
 		}
-	case 22:
+	case 23:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:96
+//line parser/parser.y:97
 		{
 			offset, _ := strconv.Atoi(yyDollar[2].str)
 			limit, _ := strconv.Atoi(yyDollar[4].str)
 			yyVAL.limit = &Limit{Offset: offset, Rowcount: limit}
 		}
-	case 23:
+	case 24:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line parser/parser.y:102
+//line parser/parser.y:103
 		{
 			limit, _ := strconv.Atoi(yyDollar[2].str)
 			offset, _ := strconv.Atoi(yyDollar[4].str)
 			yyVAL.limit = &Limit{Offset: offset, Rowcount: limit}
 		}
-	case 24:
+	case 25:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:109
+//line parser/parser.y:110
 		{
 			yyVAL.value = value.Str{Val: ""}
 		}
-	case 25:
+	case 26:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:110
+//line parser/parser.y:111
 		{
 			yyVAL.value = value.Str{Val: yyDollar[2].str}
 		}
-	case 26:
+	case 27:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:112
+//line parser/parser.y:113
 		{
 			v, _ := strconv.Atoi(yyDollar[1].str)
 			yyVAL.value = value.Int{Val: int64(v)}
 		}
-	case 27:
+	case 28:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:117
+//line parser/parser.y:118
 		{
 			v, _ := strconv.ParseFloat(yyDollar[1].str, 64)
 			yyVAL.value = value.Float{Val: v}
-		}
-	case 28:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:121
-		{
-			yyVAL.value = value.Bool{true}
 		}
 	case 29:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:122
 		{
-			yyVAL.value = value.Bool{false}
+			yyVAL.value = value.Bool{true}
 		}
 	case 30:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:123
 		{
-			yyVAL.value = value.Null{}
+			yyVAL.value = value.Bool{false}
 		}
 	case 31:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:126
+//line parser/parser.y:124
 		{
-			yyVAL.str = "="
+			yyVAL.value = value.Null{}
 		}
 	case 32:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:127
 		{
-			yyVAL.str = "<"
+			yyVAL.str = "="
 		}
 	case 33:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:128
 		{
-			yyVAL.str = ">"
+			yyVAL.str = "<"
 		}
 	case 34:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:129
 		{
-			yyVAL.str = "<="
+			yyVAL.str = ">"
 		}
 	case 35:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:130
 		{
-			yyVAL.str = ">="
+			yyVAL.str = "<="
 		}
 	case 36:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:131
+		{
+			yyVAL.str = ">="
+		}
+	case 37:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser/parser.y:132
 		{
 			yyVAL.str = "!="
 		}

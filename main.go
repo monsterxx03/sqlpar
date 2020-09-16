@@ -12,11 +12,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"flag"
 )
 
 //go:generate goyacc -o parser/parser.go parser/parser.y
 
 var historyFile = "~/.sqlpar_history"
+
+var (
+	sqlQuery = flag.String("sql", "", "run sql directly")
+	parquetFile = flag.String("file", "", "parquet file to query")
+)
 
 func showTable(pr *reader.ParquetReader) {
 	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
@@ -56,16 +62,11 @@ func loadHistory() (*os.File, error) {
 	return file, nil
 }
 
-func RunShell() {
-	if len(os.Args) == 1 {
-		fmt.Println("Usage: sqlpar test.parquet")
-		os.Exit(1)
-	}
+func runShell() {
 	ll := liner.NewLiner()
 	defer ll.Close()
 	ll.SetCtrlCAborts(true)
 
-	var path = os.Args[1]
 	file, err := loadHistory()
 	if err != nil {
 		panic(err)
@@ -82,15 +83,11 @@ func RunShell() {
 		ll.AppendHistory(s.Text())
 	}
 
-	en, err := engine.NewParquetEngine(path)
+	en, err := engine.NewParquetEngine(*parquetFile)
 	if err != nil {
 		panic(err)
 	}
 	for {
-		pr, err := en.GetColumnReader()
-		if err != nil {
-			panic(err)
-		}
 		input, err := ll.Prompt("sqlpar> ")
 		if err == io.EOF {
 			return
@@ -99,17 +96,6 @@ func RunShell() {
 			fmt.Fprintln(os.Stderr, err)
 		}
 		ll.AppendHistory(input)
-		input = strings.TrimSpace(input)
-		if len(input) == 0 {
-			continue
-		}
-		if strings.HasSuffix(input, ";") {
-			input = strings.TrimSuffix(input, ";")
-		}
-		if strings.ToLower(input) == "show table" {
-			showTable(pr)
-			continue
-		}
 		stmt, err := parser.Parse(input)
 		if err != nil {
 			fmt.Println(err)
@@ -124,6 +110,34 @@ func RunShell() {
 	}
 }
 
+func runSQL(sql string) (*engine.RecordSet, error) {
+	en, err := engine.NewParquetEngine(*parquetFile)
+	if err != nil {
+		return nil, err
+	}
+	stmt, err := parser.Parse(sql)
+	if err != nil {
+		return nil, err
+	}
+	result, err := en.Execute(stmt)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func main() {
-	RunShell()
+	flag.Parse()
+	if *parquetFile == "" {
+		fmt.Fprintf(os.Stderr, "missing -file")
+	}
+	if *sqlQuery == "" {
+		runShell()
+	} else {
+		result, err := runSQL(*sqlQuery)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(result)
+	}
 }

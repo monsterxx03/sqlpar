@@ -51,6 +51,7 @@ command { setResult(yylex, $1) }
 
 command:
 select_stmt { $$ = $1 }
+| select_stmt ';' { $$ = $1}
 
 select_stmt:
 SELECT sel_field_list FROM table_name where_opt limit_opt

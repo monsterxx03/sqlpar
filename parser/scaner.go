@@ -28,7 +28,7 @@ var operators = map[string]int{
 }
 
 func NewScanner(sql string) *Scanner {
-	return &Scanner{src: []rune(sql)}
+	return &Scanner{src: []rune(strings.TrimSpace(sql))}
 }
 
 func (s *Scanner) Scan() (*Token, error) {
