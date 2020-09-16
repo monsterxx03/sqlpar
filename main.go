@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/monsterxx03/sqlpar/engine"
 	"github.com/monsterxx03/sqlpar/parser"
-	"github.com/monsterxx03/sqlpar/value"
 	"github.com/peterh/liner"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
@@ -123,10 +122,6 @@ func RunShell() {
 		}
 		fmt.Println(result)
 	}
-}
-
-func printResult(rows map[string][]value.Value) {
-
 }
 
 func main() {

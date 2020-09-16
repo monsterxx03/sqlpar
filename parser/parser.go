@@ -96,7 +96,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser/parser.y:133
+//line parser/parser.y:138
 
 func Parse(s string) (Statement, error) {
 	l := NewLexer(s)
@@ -116,45 +116,45 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 61
+const yyLast = 64
 
 var yyAct = [...]int{
 
-	47, 54, 48, 49, 50, 55, 27, 23, 12, 29,
-	30, 20, 13, 10, 26, 41, 29, 30, 6, 52,
-	51, 11, 46, 28, 53, 44, 19, 24, 15, 22,
-	4, 16, 31, 7, 39, 40, 5, 42, 43, 33,
-	34, 35, 36, 37, 38, 12, 25, 1, 21, 18,
-	17, 8, 3, 2, 45, 32, 9, 14, 0, 8,
-	8,
+	47, 48, 49, 50, 51, 55, 56, 29, 30, 27,
+	12, 23, 10, 20, 13, 41, 11, 26, 6, 29,
+	30, 53, 46, 44, 52, 5, 28, 15, 54, 22,
+	24, 16, 7, 19, 4, 40, 31, 1, 39, 17,
+	12, 42, 43, 33, 34, 35, 36, 37, 38, 25,
+	21, 18, 3, 2, 8, 45, 32, 9, 14, 0,
+	0, 0, 8, 8,
 }
 var yyPact = [...]int{
 
-	25, -1000, -1000, -1000, 2, 15, -1000, -1000, -1000, -20,
-	-1000, 17, 2, 2, 19, -1000, -1000, -22, 20, -5,
-	-1000, -1000, 11, -1, -5, 18, -5, -1000, 5, -5,
-	-5, -8, -12, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
-	8, 7, -1000, -1000, -1000, -1000, -10, -1000, -1000, -1000,
-	-1000, -1000, -1000, -1000, -29, -1000,
+	29, -1000, -1000, -1000, 1, 10, -1000, -1000, -1000, -18,
+	-1000, 16, 1, 1, 26, -1000, -1000, -20, 20, -2,
+	-1000, -1000, 14, 2, -2, 22, -2, -1000, 5, -2,
+	-2, -10, -12, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	12, 9, -1000, -1000, -1000, -1000, -6, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000, -1000, -28, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 7, 57, 46, 56, 55, 54, 53, 52, 18,
-	36, 49, 48, 47,
+	0, 11, 58, 49, 57, 56, 55, 53, 52, 18,
+	25, 51, 50, 37,
 }
 var yyR1 = [...]int{
 
 	0, 13, 7, 8, 10, 10, 9, 9, 9, 4,
 	2, 3, 11, 11, 1, 1, 1, 1, 1, 12,
-	12, 12, 12, 6, 6, 6, 6, 6, 6, 5,
-	5, 5, 5, 5, 5,
+	12, 12, 12, 6, 6, 6, 6, 6, 6, 6,
+	5, 5, 5, 5, 5, 5,
 }
 var yyR2 = [...]int{
 
 	0, 1, 1, 6, 1, 3, 1, 1, 4, 1,
 	1, 1, 0, 2, 3, 3, 3, 3, 2, 0,
 	2, 4, 4, 2, 3, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1,
 }
 var yyChk = [...]int{
 
@@ -162,17 +162,17 @@ var yyChk = [...]int{
 	11, 6, 30, 32, -2, 11, -9, -10, -11, 7,
 	33, -12, 9, -1, 32, -3, 19, 11, 12, 17,
 	18, -1, -5, 21, 22, 23, 24, 25, 26, -1,
-	30, 10, -1, -1, 33, -6, 34, 12, 14, 15,
-	16, 12, 12, 34, 11, 34,
+	30, 10, -1, -1, 33, -6, 34, 12, 13, 14,
+	15, 16, 12, 12, 34, 11, 34,
 }
 var yyDef = [...]int{
 
 	0, -2, 1, 2, 0, 0, 4, 6, 7, 0,
 	-2, 0, 0, 0, 12, 10, 5, 0, 19, 0,
 	8, 3, 0, 13, 0, 0, 0, 11, 20, 0,
-	0, 0, 0, 29, 30, 31, 32, 33, 34, 18,
+	0, 0, 0, 30, 31, 32, 33, 34, 35, 18,
 	0, 0, 16, 17, 14, 15, 0, 25, 26, 27,
-	28, 21, 22, 23, 0, 24,
+	28, 29, 21, 22, 23, 0, 24,
 }
 var yyTok1 = [...]int{
 
@@ -689,55 +689,62 @@ yydefault:
 		}
 	case 26:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:122
+//line parser/parser.y:123
 		{
-			yyVAL.value = value.Bool{true}
+			v, _ := strconv.ParseFloat(yyDollar[1].str, 64)
+			yyVAL.value = value.Float{Val: v}
 		}
 	case 27:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:123
+//line parser/parser.y:127
 		{
-			yyVAL.value = value.Bool{false}
+			yyVAL.value = value.Bool{true}
 		}
 	case 28:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:124
+//line parser/parser.y:128
 		{
-			yyVAL.value = value.Null{}
+			yyVAL.value = value.Bool{false}
 		}
 	case 29:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:127
+//line parser/parser.y:129
 		{
-			yyVAL.str = "="
+			yyVAL.value = value.Null{}
 		}
 	case 30:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:128
+//line parser/parser.y:132
 		{
-			yyVAL.str = "<"
+			yyVAL.str = "="
 		}
 	case 31:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:129
+//line parser/parser.y:133
 		{
-			yyVAL.str = ">"
+			yyVAL.str = "<"
 		}
 	case 32:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:130
+//line parser/parser.y:134
 		{
-			yyVAL.str = "<="
+			yyVAL.str = ">"
 		}
 	case 33:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:131
+//line parser/parser.y:135
 		{
-			yyVAL.str = ">="
+			yyVAL.str = "<="
 		}
 	case 34:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:132
+//line parser/parser.y:136
+		{
+			yyVAL.str = ">="
+		}
+	case 35:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser/parser.y:137
 		{
 			yyVAL.str = "!="
 		}

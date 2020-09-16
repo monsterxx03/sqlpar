@@ -43,7 +43,7 @@ type (
 
 type (
 	Expr interface {
-		Evaluate(row map[string]value.Value) (bool, error)
+		Evaluate(cols []string, row value.Row) (bool, error)
 		GetTargetCols() []string
 	}
 	ComparisonExpr struct {
@@ -64,11 +64,21 @@ type (
 	}
 )
 
-func (e *ComparisonExpr) Evaluate(row map[string]value.Value) (bool, error) {
-	val, ok := row[e.Left]
-	if !ok {
+func (e *ComparisonExpr) Evaluate(cols []string, row value.Row) (bool, error) {
+	hit := false
+	idx := 0
+	for i, col := range cols {
+		if col == e.Left {
+			hit = true
+			idx = i
+			break
+		}
+	}
+	// this expr is not related to pass in data
+	if !hit {
 		return true, nil
 	}
+	val := row[idx]
 	if !value.IsComparable(val, e.Right) {
 		return false, fmt.Errorf("%s: %t and %t are not comparable", e.Left, val, e.Right)
 	}
@@ -83,12 +93,12 @@ func (e *ComparisonExpr) GetTargetCols() []string {
 	return []string{e.Left}
 }
 
-func (e *AndExpr) Evaluate(row map[string]value.Value) (bool, error) {
-	leftOk, err := e.Left.Evaluate(row)
+func (e *AndExpr) Evaluate(cols []string, row value.Row) (bool, error) {
+	leftOk, err := e.Left.Evaluate(cols, row)
 	if err != nil {
 		return false, err
 	}
-	rightOk, err := e.Right.Evaluate(row)
+	rightOk, err := e.Right.Evaluate(cols, row)
 	if err != nil {
 		return false, err
 	}
@@ -102,15 +112,15 @@ func (e *AndExpr) GetTargetCols() []string {
 	return filterDup(append(e.Left.GetTargetCols(), e.Right.GetTargetCols()...))
 }
 
-func (e *OrExpr) Evaluate(row map[string]value.Value) (bool, error) {
-	leftOk, err := e.Left.Evaluate(row)
+func (e *OrExpr) Evaluate(cols []string, row value.Row) (bool, error) {
+	leftOk, err := e.Left.Evaluate(cols, row)
 	if err != nil {
 		return false, err
 	}
 	if leftOk {
 		return true, nil
 	}
-	rightOk, err := e.Right.Evaluate(row)
+	rightOk, err := e.Right.Evaluate(cols, row)
 	if err != nil {
 		return false, err
 	}
@@ -121,8 +131,8 @@ func (e *OrExpr) GetTargetCols() []string {
 	return filterDup(append(e.Left.GetTargetCols(), e.Right.GetTargetCols()...))
 }
 
-func (e *NotExpr) Evaluate(row map[string]value.Value) (bool, error) {
-	ok, err := e.Expr.Evaluate(row)
+func (e *NotExpr) Evaluate(cols []string, row value.Row) (bool, error) {
+	ok, err := e.Expr.Evaluate(cols, row)
 	if err != nil {
 		return false, err
 	}

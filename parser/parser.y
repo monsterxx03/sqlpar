@@ -119,6 +119,11 @@ value:
       v, _ := strconv.Atoi($1)
       $$ = value.Int{Val: int64(v)}
     }
+| FLOAT
+    {
+        v, _ := strconv.ParseFloat($1, 64)
+	$$ = value.Float{Val: v}
+    }
 | TRUE { $$ = value.Bool{true} }
 | FALSE { $$ = value.Bool{false} }
 | NULL { $$ = value.Null{} }

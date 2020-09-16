@@ -3,7 +3,18 @@ package value
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
+
+type Row []Value
+
+func (r *Row) String() string {
+	result := make([]string, len(*r))
+	for i, val := range *r {
+		result[i] = val.String()
+	}
+	return strings.Join(result, "\t")
+}
 
 type Value interface {
 	Gt(Value) bool
