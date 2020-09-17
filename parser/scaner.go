@@ -11,9 +11,10 @@ const (
 )
 
 type Scanner struct {
-	src []rune
-	pos int
-	buf bytes.Buffer
+	src      []rune
+	pos      int
+	buf      bytes.Buffer
+	strStart bool
 }
 
 var keywords = map[string]int{
@@ -38,15 +39,19 @@ func (s *Scanner) Scan() (*Token, error) {
 	token := ch
 	lit := string(ch)
 	switch {
+	case ch == '"':
+		s.strStart = !s.strStart
 	case isDigitChar(ch):
 		token = s.scanNumber(ch)
 		lit = s.buf.String()
 	case isIdentChar(ch):
 		token = rune(s.scanIdent(ch))
 		lit = s.buf.String()
-		_t, ok := keywords[strings.ToUpper(lit)]
-		if ok {
-			token = rune(_t)
+		if !s.strStart {
+			_t, ok := keywords[strings.ToUpper(lit)]
+			if ok {
+				token = rune(_t)
+			}
 		}
 	case isOperatorChar(ch):
 		s.scanOperator(ch)
