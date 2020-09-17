@@ -16,11 +16,12 @@ type Scanner struct {
 	buf bytes.Buffer
 }
 
-var keywords =  map[string]int{
+var keywords = map[string]int{
 	"SELECT": SELECT, "WHERE": WHERE, "FROM": FROM,
 	"LIMIT": LIMIT, "OFFSET": OFFSET,
 	"AND": AND, "OR": OR, "NOT": NOT,
 	"TRUE": TRUE, "FALSE": FALSE, "NULL": NULL,
+	"SHOW": SHOW, "TABLE": TABLE,
 }
 
 var operators = map[string]int{
@@ -131,4 +132,3 @@ func isIdentChar(ch rune) bool {
 func isOperatorChar(ch rune) bool {
 	return ch == '=' || ch == '>' || ch == '<' || ch == '!'
 }
-

@@ -9,8 +9,7 @@ type (
 	Statement interface {
 	}
 
-	Desc struct {
-		TableName string
+	ShowTable struct {
 	}
 
 	Select struct {
@@ -175,6 +174,10 @@ type Limit struct {
 func NewSelect(fields SelectFieldList, table string, where *Where, limit *Limit) *Select {
 	return &Select{Fields: fields, TableName: table,
 		Where: where, Limit: limit}
+}
+
+func NewShowTable() *ShowTable {
+	return new(ShowTable)
 }
 
 func NewWhere(expr Expr) *Where {

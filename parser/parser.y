@@ -26,13 +26,13 @@ func setResult(yylex interface{}, stmt Statement) {
 }
 
 %token ILLEGAL
-%token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET
+%token <str> SELECT FROM WHERE ORDER_BY LIMIT OFFSET SHOW TABLE
 %token <str> IDENT INTEGER FLOAT TRUE FALSE NULL
 
 %type <expr> expr
 %type <str> table_name col func_name compare
 %type <value> value
-%type <stmt> command
+%type <stmt> command show_table_stmt
 %type <sel> select_stmt
 %type <sel_field> sel_field
 %type <sel_field_list> sel_field_list
@@ -48,10 +48,14 @@ func setResult(yylex interface{}, stmt Statement) {
 
 any_command:
 command { setResult(yylex, $1) }
+| command ';' { setResult(yylex, $1) }
 
 command:
 select_stmt { $$ = $1 }
-| select_stmt ';' { $$ = $1}
+| show_table_stmt { $$ = $1}
+
+show_table_stmt:
+SHOW TABLE { $$ = NewShowTable() }
 
 select_stmt:
 SELECT sel_field_list FROM table_name where_opt limit_opt

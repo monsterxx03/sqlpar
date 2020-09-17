@@ -2,17 +2,15 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"github.com/monsterxx03/sqlpar/engine"
 	"github.com/monsterxx03/sqlpar/parser"
 	"github.com/peterh/liner"
-	"github.com/xitongsys/parquet-go/reader"
-	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
-	"flag"
 )
 
 //go:generate goyacc -o parser/parser.go parser/parser.y
@@ -20,14 +18,9 @@ import (
 var historyFile = "~/.sqlpar_history"
 
 var (
-	sqlQuery = flag.String("sql", "", "run sql directly")
+	sqlQuery    = flag.String("sql", "", "run sql directly")
 	parquetFile = flag.String("file", "", "parquet file to query")
 )
-
-func showTable(pr *reader.ParquetReader) {
-	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
-	fmt.Println(tree.OutputJsonSchema())
-}
 
 func expandPath(path string) (string, error) {
 	if strings.HasPrefix(path, "~/") {
@@ -106,7 +99,9 @@ func runShell() {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println(result)
+		if result != nil {
+			fmt.Println(result)
+		}
 	}
 }
 
@@ -138,6 +133,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(result)
+		if result != nil {
+			fmt.Println(result)
+		}
 	}
 }

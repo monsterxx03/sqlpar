@@ -12,6 +12,7 @@ import (
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/source"
+	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
 )
 
 type RecordSet struct {
@@ -67,10 +68,23 @@ func NewParquetEngine(fileName string) (*ParquetEngine, error) {
 	return &ParquetEngine{schema: NewParquetSchema(r.SchemaHandler.SchemaElements), fr: fr}, nil
 }
 
+func (p *ParquetEngine) PrintSchema() error {
+	pr, err := p.GetColumnReader()
+	if err != nil {
+		return err
+	}
+	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
+	fmt.Println(tree.OutputJsonSchema())
+	return nil
+}
+
 func (p *ParquetEngine) Execute(stmt parser.Statement) (*RecordSet, error) {
 	switch stmt.(type) {
 	case *parser.Select:
 		return p.executeSelect(stmt.(*parser.Select))
+	case *parser.ShowTable:
+		p.PrintSchema()
+		return nil, nil
 	default:
 		return nil, errors.New("unsupported statement")
 	}
