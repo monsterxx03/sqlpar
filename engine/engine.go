@@ -12,7 +12,6 @@ import (
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/reader"
 	"github.com/xitongsys/parquet-go/source"
-	"github.com/xitongsys/parquet-go/tool/parquet-tools/schematool"
 )
 
 type RecordSet struct {
@@ -69,12 +68,9 @@ func NewParquetEngine(fileName string) (*ParquetEngine, error) {
 }
 
 func (p *ParquetEngine) PrintSchema() error {
-	pr, err := p.GetColumnReader()
-	if err != nil {
-		return err
+	for _, f := range p.schema.Fields {
+		fmt.Println(f.Name, f)
 	}
-	tree := schematool.CreateSchemaTree(pr.SchemaHandler.SchemaElements)
-	fmt.Println(tree.OutputJsonSchema())
 	return nil
 }
 

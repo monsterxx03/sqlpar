@@ -125,6 +125,7 @@ func main() {
 	flag.Parse()
 	if *parquetFile == "" {
 		fmt.Fprintf(os.Stderr, "missing -file")
+		os.Exit(1)
 	}
 	if *sqlQuery == "" {
 		runShell()

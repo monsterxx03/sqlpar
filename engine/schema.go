@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"fmt"
 	"github.com/xitongsys/parquet-go/parquet"
+	"strings"
 )
 
 type Schema interface {
@@ -13,6 +15,36 @@ type Field struct {
 	Type    string
 	MFields map[string]*Field
 	Fields  []*Field
+}
+
+func (f *Field) String() string {
+	if len(f.Fields) == 0 {
+		if f.SE.ConvertedType != nil {
+			return f.SE.ConvertedType.String()
+		}
+		if f.SE.Type != nil {
+			return f.SE.Type.String()
+		}
+	}
+	if f.SE.ConvertedType == nil {
+		fields := make([]string, 0, len(f.Fields))
+		for _, _f := range f.Fields {
+			fields = append(fields, fmt.Sprintf("%s:%s", _f.Name, _f))
+		}
+		return fmt.Sprintf("struct<%s>", strings.Join(fields, ","))
+	}
+	switch *f.SE.ConvertedType {
+	case parquet.ConvertedType_LIST:
+		// LIST.ELEMENT
+		return fmt.Sprintf("array<%s>", f.Fields[0].Fields[0])
+	case parquet.ConvertedType_MAP:
+		// map<KEY_VALUE.KEY, KEY_VALUE.VALUE>
+		return fmt.Sprintf("map<%s,%s>", f.Fields[0].Fields[0], f.Fields[0].Fields[1])
+	case parquet.ConvertedType_JSON:
+		return "json"
+	default:
+		return f.SE.ConvertedType.String()
+	}
 }
 
 type ParquetSchema struct {
