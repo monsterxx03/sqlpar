@@ -95,6 +95,8 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 			break
 		case *parser.ColExpr:
 			cols = append(cols, field.(*parser.ColExpr).Name)
+		case *parser.NestColExpr:
+			fmt.Println(field.(*parser.NestColExpr).Subs)
 		}
 	}
 	filterCols := make([]string, 0)

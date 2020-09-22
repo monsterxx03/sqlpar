@@ -34,7 +34,7 @@ func setResult(yylex interface{}, stmt Statement) {
 %type <value> value
 %type <stmt> command show_table_stmt
 %type <sel> select_stmt
-%type <sel_field> sel_field
+%type <sel_field> sel_field nest_col
 %type <sel_field_list> sel_field_list
 %type <where> where_opt
 %type <limit> limit_opt
@@ -69,6 +69,7 @@ sel_field:
 '*' { $$ = &StarExpr{} }
 | '"' col '"' { $$ = &ColExpr{$2} }
 | col { $$ = &ColExpr{$1} }
+| nest_col { $$ = $1 }
 | func_name '(' sel_field_list ')' { $$ = &FuncExpr{Name: $1, Fields: $3} }
 
 func_name:
@@ -79,6 +80,34 @@ IDENT { $$ = $1 }
 
 col:
 IDENT { $$ = $1 }
+
+nest_col:
+IDENT '[' INTEGER ']' {
+subs:= []string{$1, $3}
+$$ = &NestColExpr{Subs: subs}
+}
+| IDENT '[' '"' IDENT '"' ']' {
+subs := []string{$1, $4}
+$$ = &NestColExpr{Subs: subs}
+}
+| IDENT '.' IDENT {
+subs:= []string{$1, $3}
+$$ = &NestColExpr{Subs: subs}
+}
+| nest_col '[' '"' IDENT '"' ']' {
+col := $1.(*NestColExpr)
+col.Subs = append(col.Subs, $4)
+}
+| nest_col '[' INTEGER ']' {
+col := $1.(*NestColExpr)
+col.Subs = append(col.Subs, $3)
+$$ = col
+}
+| nest_col '.' IDENT {
+col := $1.(*NestColExpr)
+col.Subs = append(col.Subs, $3)
+$$ = col
+}
 
 where_opt:
 { $$ = nil }

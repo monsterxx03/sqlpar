@@ -131,7 +131,7 @@ func isDigitChar(ch rune) bool {
 }
 
 func isIdentChar(ch rune) bool {
-	return isLetter(ch) || isDigitChar(ch) || ch == '_' || ch == '.'
+	return isLetter(ch) || isDigitChar(ch) || ch == '_'
 }
 
 func isOperatorChar(ch rune) bool {

@@ -34,6 +34,9 @@ type (
 	}
 	StarExpr struct {
 	}
+	NestColExpr struct {
+		Subs []string
+	}
 	FuncExpr struct {
 		Name   string
 		Fields SelectFieldList
