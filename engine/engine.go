@@ -96,7 +96,12 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 		case *parser.ColExpr:
 			cols = append(cols, field.(*parser.ColExpr).Name)
 		case *parser.NestColExpr:
-			fmt.Println(field.(*parser.NestColExpr).Subs)
+			subs :=field.(*parser.NestColExpr).Subs
+			_p, err := p.schema.GetFieldPath(subs)
+			if err != nil {
+				return nil, err
+			}
+			cols = append(cols, _p)
 		}
 	}
 	filterCols := make([]string, 0)
@@ -111,7 +116,7 @@ func (p *ParquetEngine) executeSelect(stmt *parser.Select) (*RecordSet, error) {
 	if stmt.Limit != nil {
 		limit = stmt.Limit.Rowcount
 	}
-	cr, err := p.GetColumnReader()
+	cr, err := p.GetReader()
 	if err != nil {
 		return nil, err
 	}
@@ -162,15 +167,15 @@ func filter(expr parser.Expr, result *RecordSet) (*RecordSet, error) {
 }
 
 func (p *ParquetEngine) GetTotalRowCount() (int64, error) {
-	cr, err := p.GetColumnReader()
+	cr, err := p.GetReader()
 	if err != nil {
 		return 0, err
 	}
 	return cr.GetNumRows(), nil
 }
 
-func (p *ParquetEngine) GetColumnReader() (*reader.ParquetReader, error) {
-	return reader.NewParquetColumnReader(p.fr, 2)
+func (p *ParquetEngine) GetReader() (*reader.ParquetReader, error) {
+	return reader.NewParquetReader(p.fr,nil, 2)
 }
 
 func (p *ParquetEngine) FetchRows(cr *reader.ParquetReader, cols []string, limit int) (result *RecordSet, err error) {
